@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - Orthopedic Radiology Registry{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8 glass-panel p-8 sm:p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+    
+    <!-- Top accent glow -->
+    <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="text-center relative">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-xl shadow-cyan-500/25 mb-4">
+        <i class="fa-solid fa-bone text-2xl text-white"></i>
+      </div>
+      <h2 class="text-2xl font-bold tracking-tight text-white">Clinical Radiology Portal</h2>
+      <p class="text-sm text-slate-400 mt-1">Sign in to access Orthopedic Patient & Scan Registries</p>
+    </div>
+
+    <!-- Login Form -->
+    <form class="mt-8 space-y-6 relative" method="POST" action="{{ url_for('login') }}">
+      <div class="space-y-4">
+        <div>
+          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Username</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <input id="username" name="username" type="text" required
+              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500"
+              placeholder="e.g. admin or viewer">
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <input id="password" name="password" type="password" required
+              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500"
+              placeholder="••••••••">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit"
+        class="w-full flex justify-center items-center py-3 px-4 rounded-xl text-sm font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+        <i class="fa-solid fa-right-to-bracket mr-2"></i> Access Registry
+      </button>
+    </form>
+
+    <!-- Pre-seeded Credentials Card -->
+    <div class="pt-4 border-t border-slate-800 text-xs text-slate-400">
+      <div class="flex items-center justify-between mb-2">
+        <span class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]"><i class="fa-solid fa-key text-cyan-400 mr-1"></i> Quick Login Credentials</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 text-left">
+        <button type="button" onclick="fillCreds('admin', 'admin123')"
+          class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-400 group-hover:text-emerald-300">Admin / PI</span>
+            <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
+          </div>
+          <div class="font-mono text-[10px] text-slate-400 mt-1">admin / admin123</div>
+        </button>
+
+        <button type="button" onclick="fillCreds('viewer', 'viewer123')"
+          class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-cyan-400 group-hover:text-cyan-300">Viewer</span>
+            <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
+          </div>
+          <div class="font-mono text-[10px] text-slate-400 mt-1">viewer / viewer123</div>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function fillCreds(u, p) {
+    document.getElementById('username').value = u;
+    document.getElementById('password').value = p;
+  }
+</script>
+{% endblock %}

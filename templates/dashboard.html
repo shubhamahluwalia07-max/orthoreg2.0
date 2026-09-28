@@ -1,0 +1,938 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Registry - Orthopedic Radiology Registry{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Top Metric Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- Total Patients -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Patients</p>
+          <h3 id="statTotalPatients" class="text-2xl font-bold text-white mt-1 font-mono">{{ total_patients }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-xl">
+          <i class="fa-solid fa-users"></i>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center text-[11px] text-cyan-400">
+        <i class="fa-solid fa-circle-check mr-1.5"></i> Unique Clinical CR Numbers
+      </div>
+    </div>
+
+    <!-- Total Scans -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Scans</p>
+          <h3 id="statTotalScans" class="text-2xl font-bold text-white mt-1 font-mono">{{ total_scans }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl">
+          <i class="fa-solid fa-x-ray"></i>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center text-[11px] text-blue-400">
+        <i class="fa-solid fa-layer-group mr-1.5"></i> Ingested DICOM Series
+      </div>
+    </div>
+
+    <!-- Active Research Trials -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Trials</p>
+          <h3 class="text-2xl font-bold text-white mt-1 font-mono">{{ total_trials }}</h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-xl">
+          <i class="fa-solid fa-vial-circle-check"></i>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center text-[11px] text-purple-400">
+        <i class="fa-solid fa-clipboard-check mr-1.5"></i> Curated Research Cohorts
+      </div>
+    </div>
+
+    <!-- Drive Sync Status -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Cloud Storage</p>
+          <h3 class="text-sm font-bold text-white mt-2 flex items-center gap-1.5">
+            {% if is_drive_configured %}
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span> Google Drive Ready
+            {% else %}
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Local Ingest Mode
+            {% endif %}
+          </h3>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl">
+          <i class="fa-brands fa-google-drive"></i>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center justify-between text-[11px]">
+        {% if current_user.is_admin_or_pi %}
+          <a href="{{ url_for('drive_sync') }}" class="text-emerald-400 hover:underline flex items-center">
+            Configure Sync <i class="fa-solid fa-arrow-right ml-1"></i>
+          </a>
+        {% else %}
+          <span class="text-slate-400">Read-Only Viewer Access</span>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Live Crawler Telemetry Banner -->
+  <div id="crawlerLiveBanner" class="hidden glass-panel p-3.5 rounded-2xl border border-cyan-500/40 bg-cyan-950/20 text-xs flex flex-wrap items-center justify-between gap-3 shadow-lg shadow-cyan-500/10">
+    <div class="flex items-center space-x-3">
+      <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
+      <div>
+        <span class="font-bold text-white uppercase tracking-wider font-mono">Background Metadata Crawler:</span>
+        <span id="crawlerDetails" class="text-cyan-300 ml-2 font-mono">Indexing Local Radiology Repository...</span>
+      </div>
+    </div>
+    <div class="flex items-center space-x-4 font-mono text-[11px]">
+      <span class="text-slate-300">Files Scanned: <strong id="crawlerProgress" class="text-white">0</strong></span>
+      <span class="text-cyan-300">Folders: <strong id="crawlerFolders">0</strong></span>
+      <span class="text-emerald-400">Ingested: <strong id="crawlerIngested">0</strong></span>
+      <span class="text-slate-400">Skipped: <strong id="crawlerSkipped">0</strong></span>
+      <span id="crawlerLiveBadge" class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+        <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Live Syncing
+      </span>
+    </div>
+  </div>
+
+  <!-- Search, Filters & Action Toolbar -->
+  <div class="glass-panel p-4 rounded-2xl">
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+      
+      <!-- Search Form -->
+      <form method="GET" action="{{ url_for('dashboard') }}" class="w-full lg:w-auto flex-1 flex flex-wrap items-center gap-3">
+        <div class="relative flex-1 min-w-[220px]">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          </div>
+          <input type="text" name="search" id="filterSearch" value="{{ selected_search }}"
+            placeholder="Search Patient Name or CR#..."
+            class="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-xs placeholder-slate-500">
+        </div>
+
+        <!-- Modality Filter -->
+        <select name="modality" id="filterModality" class="glass-input px-3 py-2 rounded-xl text-xs">
+          <option value="">All Modalities</option>
+          {% for mod in modalities %}
+            <option value="{{ mod }}" {% if selected_modality == mod %}selected{% endif %}>{{ mod }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Trial Filter -->
+        <select name="trial" id="filterTrial" class="glass-input px-3 py-2 rounded-xl text-xs">
+          <option value="">All Trials</option>
+          {% for t in all_trials %}
+            <option value="{{ t.id }}" {% if selected_trial == t.id|string or selected_trial == t.trial_name %}selected{% endif %}>{{ t.trial_name }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Gender Filter -->
+        <select name="gender" id="filterGender" class="glass-input px-3 py-2 rounded-xl text-xs">
+          <option value="">All Genders</option>
+          <option value="M" {% if selected_gender|upper in ['M', 'MALE'] %}selected{% endif %}>Male</option>
+          <option value="F" {% if selected_gender|upper in ['F', 'FEMALE'] %}selected{% endif %}>Female</option>
+          <option value="Other" {% if selected_gender|upper == 'OTHER' %}selected{% endif %}>Other</option>
+        </select>
+
+        {% if sort_by %}
+          <input type="hidden" name="sort_by" value="{{ sort_by }}">
+          <input type="hidden" name="order" value="{{ order }}">
+        {% endif %}
+
+        <button type="submit" id="applyFiltersBtn" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-400 border border-slate-700 transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-filter"></i> Apply
+        </button>
+
+        {% if selected_search or selected_modality or selected_trial or selected_gender or sort_by %}
+          <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs text-rose-400 border border-slate-800 transition-colors flex items-center gap-1">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </a>
+        {% endif %}
+      </form>
+
+      <!-- Action Buttons for Admin/PI and Export -->
+      <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
+        <a href="{{ url_for('export_all_patients') }}" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200 transition-all flex items-center">
+          <i class="fa-solid fa-file-csv text-emerald-400 mr-1.5"></i> Export CSV
+        </a>
+
+        {% if current_user.is_admin_or_pi %}
+        <button onclick="openModal('registerPatientModal')" class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-xs font-semibold text-purple-200 transition-all flex items-center shadow-lg shadow-purple-500/10">
+          <i class="fa-solid fa-user-plus mr-1.5 text-purple-400"></i> Register Patient (Pre-Scan)
+        </button>
+
+        <button onclick="openModal('uploadModal')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center">
+          <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Ingest DICOM
+        </button>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Patient & Scan Data Table -->
+  <div class="glass-panel rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-slate-800 bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold font-mono text-[11px]">
+            <th class="py-3.5 px-4">
+              <a href="{{ make_sort_url('cr_number') }}" class="group inline-flex items-center gap-1.5 hover:text-cyan-400 transition-colors select-none {% if sort_by == 'cr_number' %}text-cyan-400 font-bold{% endif %}" title="Sort by CR Number">
+                <span>CR NUMBER</span>
+                {% if sort_by == 'cr_number' %}
+                  {% if order == 'asc' %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+                    </svg>
+                  {% else %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  {% endif %}
+                {% else %}
+                  <svg class="w-3 h-3 text-slate-600 opacity-40 group-hover:opacity-100 group-hover:text-slate-400 shrink-0 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                  </svg>
+                {% endif %}
+              </a>
+            </th>
+            <th class="py-3.5 px-4">
+              <a href="{{ make_sort_url('patient_name') }}" class="group inline-flex items-center gap-1.5 hover:text-cyan-400 transition-colors select-none {% if sort_by == 'patient_name' %}text-cyan-400 font-bold{% endif %}" title="Sort by Patient Name">
+                <span>PATIENT NAME</span>
+                {% if sort_by == 'patient_name' %}
+                  {% if order == 'asc' %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+                    </svg>
+                  {% else %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  {% endif %}
+                {% else %}
+                  <svg class="w-3 h-3 text-slate-600 opacity-40 group-hover:opacity-100 group-hover:text-slate-400 shrink-0 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                  </svg>
+                {% endif %}
+              </a>
+            </th>
+            <th class="py-3.5 px-3">
+              <a href="{{ make_sort_url('demographics') }}" class="group inline-flex items-center gap-1.5 hover:text-cyan-400 transition-colors select-none {% if sort_by in ['demographics', 'age'] %}text-cyan-400 font-bold{% endif %}" title="Sort by Demographics">
+                <span>DEMOGRAPHICS</span>
+                {% if sort_by in ['demographics', 'age'] %}
+                  {% if order == 'asc' %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+                    </svg>
+                  {% else %}
+                    <svg class="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  {% endif %}
+                {% else %}
+                  <svg class="w-3 h-3 text-slate-600 opacity-40 group-hover:opacity-100 group-hover:text-slate-400 shrink-0 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                  </svg>
+                {% endif %}
+              </a>
+            </th>
+            <th class="py-3.5 px-4">Scans & PACS Viewer</th>
+            <th class="py-3.5 px-4">Allocated Trials</th>
+            <th class="py-3.5 px-4">Custom Columns</th>
+            <th class="py-3.5 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+          {% for p in patients %}
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            
+            <!-- CR Number -->
+            <td class="py-3 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">
+              <span class="bg-cyan-950/60 border border-cyan-800/60 px-2 py-1 rounded-md">
+                {{ p.cr_number }}
+              </span>
+            </td>
+
+            <!-- Patient Name -->
+            <td class="py-3 px-4 whitespace-nowrap">
+              {% if p.scans %}
+                <button type="button" onclick="openRadiologyModal('{{ p.cr_number|escape }}')" class="font-semibold text-white hover:text-cyan-400 transition-colors flex items-center gap-1.5 text-left" title="Click to view Radiology Data">
+                  <span>{{ p.patient_name or 'Unknown Patient' }}</span>
+                  <i class="fa-solid fa-layer-group text-[10px] text-slate-500"></i>
+                </button>
+              {% else %}
+                <span class="font-semibold text-white">{{ p.patient_name or 'Unknown Patient' }}</span>
+              {% endif %}
+            </td>
+
+            <!-- Age & Gender -->
+            <td class="py-3 px-3 whitespace-nowrap">
+              <span class="text-slate-300 font-medium">{{ p.age or 'Unknown' }}</span> • 
+              <span class="font-semibold {% if p.gender == 'M' %}text-blue-400{% elif p.gender == 'F' %}text-rose-400{% else %}text-slate-400{% endif %}">
+                {{ p.gender or 'Other' }}
+              </span>
+            </td>
+
+            <!-- Scans & Modalities: Single Button per Patient -->
+            <td class="py-3 px-4 whitespace-nowrap">
+              {% if p.scans %}
+                <button type="button"
+                        onclick="openRadiologyModal('{{ p.cr_number|escape }}')"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-cyan-500 hover:text-slate-950 border border-slate-700/80 hover:border-cyan-400 text-[11px] font-semibold text-cyan-300 transition-all shadow-sm hover:shadow-cyan-500/20 group">
+                  <i class="fa-solid fa-x-ray text-cyan-400 group-hover:text-slate-950 transition-colors"></i>
+                  <span>View Radiology Data</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-cyan-950/90 group-hover:bg-slate-900 text-[10px] text-cyan-300 group-hover:text-cyan-200 border border-cyan-800/80 font-mono">
+                    {{ p.scans|length }}
+                  </span>
+                </button>
+              {% else %}
+                <span class="text-slate-500 italic text-[11px]">No radiology data</span>
+              {% endif %}
+            </td>
+
+            <!-- Trials -->
+            <td class="py-3 px-4">
+              <div class="flex flex-wrap gap-1">
+                {% for t in p.trials %}
+                  <a href="{{ url_for('trial_dashboard', trial_id=t.id) }}"
+                     class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors">
+                    {{ t.trial_name }}
+                  </a>
+                {% else %}
+                  <span class="text-slate-500 text-[11px]">—</span>
+                {% endfor %}
+              </div>
+            </td>
+
+            <!-- Custom Columns / Attachments -->
+            <td class="py-3 px-4">
+              {% if p.custom_data %}
+                <div class="flex flex-wrap gap-1.5">
+                  {% for cd in p.custom_data %}
+                    {% if cd.field_type == 'file' %}
+                      <a href="{{ cd.field_value }}" target="_blank"
+                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-700/60 text-emerald-300 hover:bg-emerald-900/60 text-[10px]"
+                         title="View Attachment">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>{{ cd.field_name }}</span>
+                      </a>
+                    {% elif cd.field_type == 'link' %}
+                      <a href="{{ cd.field_value }}" target="_blank"
+                         class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-950/60 border border-blue-700/60 text-blue-300 hover:bg-blue-900/60 text-[10px]"
+                         title="External Link">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>{{ cd.field_name }}</span>
+                      </a>
+                    {% else %}
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800/80 border border-slate-700 text-slate-300 text-[10px]"
+                            title="{{ cd.field_name }}: {{ cd.field_value }}">
+                        <span class="text-slate-400 font-semibold">{{ cd.field_name }}:</span>
+                        <span>{{ cd.field_value }}</span>
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <span class="text-slate-500 text-[11px]">—</span>
+              {% endif %}
+            </td>
+
+            <!-- RBAC Actions -->
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              {% if current_user.is_admin_or_pi %}
+              <div class="flex items-center justify-end space-x-1.5">
+                
+                <!-- Edit Metadata Button -->
+                <button onclick="openEditModal('{{ p.cr_number }}', '{{ p.patient_name|escape }}', '{{ p.age or '' }}', '{{ p.gender or '' }}')"
+                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border border-slate-700 transition-colors"
+                  title="Edit Patient Metadata">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+
+                <!-- Assign Trials Button -->
+                <button onclick="openTrialModal('{{ p.cr_number }}', [{% for t in p.trials %}{{ t.id }},{% endfor %}])"
+                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-400 hover:text-purple-300 border border-slate-700 transition-colors"
+                  title="Assign Research Trials">
+                  <i class="fa-solid fa-vial"></i>
+                </button>
+
+                <!-- Add Custom Column / File Button -->
+                <button onclick="openCustomDataModal('{{ p.cr_number }}')"
+                  class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 border border-slate-700 transition-colors"
+                  title="Add Custom Field (Text, Link, File)">
+                  <i class="fa-solid fa-plus"></i>
+                </button>
+
+                <!-- Delete Patient (Cascade) -->
+                <form method="POST" action="{{ url_for('delete_patient', cr_number=p.cr_number) }}" class="inline" onsubmit="return confirm('Delete patient {{ p.cr_number }} and all associated scans?');">
+                  <button type="submit" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors" title="Delete Patient">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </form>
+
+              </div>
+              {% else %}
+                <span class="text-slate-500 font-mono text-[10px]">Read-Only</span>
+              {% endif %}
+            </td>
+
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="py-12 text-center text-slate-400">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <i class="fa-solid fa-folder-open text-3xl text-slate-600"></i>
+                <p class="text-sm font-semibold text-slate-300">No patient records found</p>
+                <p class="text-xs text-slate-500">Try adjusting your filters or ingest DICOM files to populate the registry.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- MODALS (ADMIN / PI ONLY)                                  -->
+<!-- ========================================================= -->
+
+{% if current_user.is_admin_or_pi %}
+
+<!-- 1. Edit Patient Metadata Modal -->
+<div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-user-pen text-cyan-400"></i> Edit Patient Metadata
+      </h3>
+      <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="editForm" method="POST" action="">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">CR Number (Read Only)</label>
+          <input type="text" id="edit_cr" readonly class="glass-input w-full px-3 py-2 rounded-xl text-xs text-slate-400 cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Patient Name</label>
+          <input type="text" name="patient_name" id="edit_name" required class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Age</label>
+            <input type="text" name="age" id="edit_age" class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="e.g. 45 Yrs">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Gender</label>
+            <select name="gender" id="edit_gender" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+              <option value="M">Male (M)</option>
+              <option value="F">Female (F)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('editModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-semibold text-slate-950">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 2. Assign Trials Modal -->
+<div id="trialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-vial text-purple-400"></i> Assign Research Trials
+      </h3>
+      <button onclick="closeModal('trialModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="trialForm" method="POST" action="">
+      <p class="text-xs text-slate-400 mb-3">Select one or more research trials to link with this patient cohort:</p>
+      <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+        {% for t in all_trials %}
+        <label class="flex items-center space-x-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+          <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="trial-checkbox rounded border-slate-700 text-purple-500 focus:ring-purple-400">
+          <div class="text-xs">
+            <span class="font-bold text-white">{{ t.trial_name }}</span>
+            <p class="text-[10px] text-slate-400">{{ t.description[:60] }}...</p>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('trialModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-xs font-semibold text-white">Update Trials</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. Add Custom Data / Column Modal -->
+<div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-database text-emerald-400"></i> Add Custom Column
+      </h3>
+      <button onclick="closeModal('customModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="customForm" method="POST" action="" enctype="multipart/form-data">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Field / Column Name</label>
+          <input type="text" name="field_name" required placeholder="e.g. Kellgren-Lawrence Grade, Surgical Notes" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Data Type</label>
+          <select name="field_type" id="custom_type_select" onchange="toggleCustomInput(this.value)" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            <option value="text">Text String / Note</option>
+            <option value="link">Hyperlink (URL)</option>
+            <option value="file">File Upload (PDF, Image, Doc)</option>
+          </select>
+        </div>
+
+        <div id="custom_text_container">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Text Value</label>
+          <input type="text" name="field_text" placeholder="Value..." class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+        </div>
+
+        <div id="custom_link_container" class="hidden">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">URL Link</label>
+          <input type="url" name="field_link" placeholder="https://..." class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+        </div>
+
+        <div id="custom_file_container" class="hidden">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Attach File</label>
+          <input type="file" name="file_upload" class="glass-input w-full px-3 py-1.5 rounded-xl text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-cyan-500 file:text-slate-950">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('customModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs font-semibold text-slate-950">Attach Data</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3.5 Pre-Scan Patient Manual Registration Modal -->
+<div id="registerPatientModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-purple-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div class="flex items-center space-x-2.5">
+        <span class="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 text-base">
+          <i class="fa-solid fa-user-plus"></i>
+        </span>
+        <div>
+          <h3 class="text-base font-bold text-white">Register Patient (Pre-Scan)</h3>
+          <p class="text-[11px] text-slate-400">Manual clinical pre-registration • Creates record with 0 associated scans</p>
+        </div>
+      </div>
+      <button onclick="closeModal('registerPatientModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form method="POST" action="{{ url_for('register_patient') }}" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- CR Number -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            CR Number <span class="text-cyan-400 font-mono text-[10px]">*</span>
+          </label>
+          <input type="text" name="cr_number" required placeholder="e.g. CR102938 or 102938"
+                 class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono placeholder-slate-500">
+          <p class="text-[10px] text-slate-500 mt-1 font-mono">Auto-prefixes 'CR' if omitted.</p>
+        </div>
+
+        <!-- Patient Name -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Patient Full Name <span class="text-cyan-400 font-mono text-[10px]">*</span>
+          </label>
+          <input type="text" name="patient_name" required placeholder="e.g. Rajesh Sharma"
+                 class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Age -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Age</label>
+          <input type="text" name="age" placeholder="e.g. 54 or 54 Yrs"
+                 class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+        </div>
+
+        <!-- Gender -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Gender</label>
+          <select name="gender" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="Other">Other / Undisclosed</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Assign Trials (Optional) -->
+      {% if all_trials %}
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Assign to Research Trials (Optional)</label>
+        <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1.5 max-h-32 overflow-y-auto">
+          {% for t in all_trials %}
+          <label class="flex items-center space-x-2 text-xs text-slate-300 hover:text-white cursor-pointer select-none">
+            <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="rounded bg-slate-800 border-slate-700 text-purple-600 focus:ring-0">
+            <span class="font-mono text-purple-300 font-semibold">{{ t.trial_name }}</span>
+            <span class="text-[10px] text-slate-500 truncate">- {{ t.description or 'Protocol' }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="p-3 rounded-xl bg-purple-950/20 border border-purple-900/30 text-[11px] text-slate-400">
+        <i class="fa-solid fa-wand-magic-sparkles text-purple-400 mr-1"></i>
+        <strong>Smart DICOM Auto-Mapping:</strong> When new DICOM scans for this CR# or matching Name & Age are crawled or ingested, they will automatically attach to this pre-registered patient record.
+      </div>
+
+      <div class="pt-2 flex justify-end space-x-2 border-t border-slate-800">
+        <button type="button" onclick="closeModal('registerPatientModal')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-xs font-semibold text-white shadow-lg shadow-purple-500/20">
+          Register Patient (Pre-Scan)
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 4. Upload Local DICOM Modal -->
+<div id="uploadModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-cloud-arrow-up text-cyan-400"></i> Ingest DICOM File
+      </h3>
+      <button onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('upload_dicom_file') }}" enctype="multipart/form-data">
+      <p class="text-xs text-slate-400 mb-3">Upload an orthopedic DICOM file (`.dcm`). Metadata will be automatically extracted with `pydicom` and populated into SQLite.</p>
+      <div class="border-2 border-dashed border-slate-700 hover:border-cyan-500/60 rounded-xl p-6 text-center transition-colors">
+        <i class="fa-solid fa-file-medical text-3xl text-cyan-400 mb-2"></i>
+        <input type="file" name="dicom_file" required accept=".dcm,application/dicom" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500 file:text-slate-950 hover:file:bg-cyan-400 cursor-pointer">
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('uploadModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-semibold text-slate-950">Ingest & Parse</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+
+<!-- ========================================================= -->
+<!-- 5. RADIOLOGY DATA & SERIES MODAL                          -->
+<!-- ========================================================= -->
+<div id="radiologyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4" onclick="if(event.target===this) closeModal('radiologyModal')">
+  <div class="glass-panel w-full max-w-2xl p-6 rounded-2xl border border-slate-700/80 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-lg shadow-inner">
+          <i class="fa-solid fa-layer-group"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span>Radiology Data & Series</span>
+            <span id="modalPatientCr" class="px-2 py-0.5 rounded text-xs font-mono bg-cyan-950 text-cyan-400 border border-cyan-800"></span>
+          </h3>
+          <p id="modalPatientDetails" class="text-xs text-slate-400 mt-0.5 font-sans"></p>
+        </div>
+      </div>
+      <button onclick="closeModal('radiologyModal')" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors" title="Close Modal">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Series Content Area -->
+    <div class="mt-4">
+      <div class="flex items-center justify-between mb-3 text-xs text-slate-400">
+        <span class="font-semibold uppercase tracking-wider text-[11px] font-mono">Available Imaging Series</span>
+        <span id="modalSeriesCount" class="font-mono text-cyan-400 font-bold">0 Series</span>
+      </div>
+
+      <!-- Scrollable List of Grouped Series -->
+      <div id="modalSeriesList" class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+        <!-- Dynamically populated via JavaScript -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="modalNoSeries" class="hidden py-10 text-center text-slate-400">
+        <i class="fa-solid fa-folder-open text-3xl text-slate-600 mb-2"></i>
+        <p class="text-sm font-semibold text-slate-300">No imaging series found</p>
+        <p class="text-xs text-slate-500">No DICOM files have been indexed for this patient yet.</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="mt-6 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+      <div class="flex items-center gap-1.5 text-slate-400">
+        <i class="fa-solid fa-circle-info text-cyan-400"></i>
+        <span>Click any series to launch the DICOM PACS workstation viewer</span>
+      </div>
+      <button type="button" onclick="closeModal('radiologyModal')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 font-semibold text-slate-200 transition-colors">
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+  }
+
+  // Preloaded Patient Series Map
+  const patientsSeriesMap = {
+    {% for p in patients %}
+    "{{ p.cr_number|escape }}": {
+      cr: "{{ p.cr_number|escape }}",
+      name: "{{ (p.patient_name or 'Unknown Patient')|escape }}",
+      age: "{{ (p.age or 'Unknown')|escape }}",
+      gender: "{{ (p.gender or 'Other')|escape }}",
+      series: [
+        {% for s in p.scans %}
+        {
+          id: {{ s.id }},
+          modality: "{{ (s.modality or 'CR')|escape }}",
+          date: "{{ (s.date_of_test or 'N/A')|escape }}",
+          desc: "{{ (s.series_description or 'Orthopedic Evaluation')|escape }}",
+          slices: {{ s.instance_count or 1 }},
+          uid: "{{ (s.series_instance_uid or '')|escape }}",
+          url: "{{ url_for('dicom_viewer', scan_id=s.id) }}"
+        },
+        {% endfor %}
+      ]
+    },
+    {% endfor %}
+  };
+
+  function openRadiologyModal(crNumber) {
+    const pData = patientsSeriesMap[crNumber];
+    const crElem = document.getElementById('modalPatientCr');
+    const detailsElem = document.getElementById('modalPatientDetails');
+
+    if (crElem) crElem.textContent = crNumber;
+
+    if (pData) {
+      if (detailsElem) {
+        detailsElem.textContent = `${pData.name} • ${pData.age} • Gender: ${pData.gender}`;
+      }
+      renderSeriesList(pData.series);
+    } else {
+      // Fallback: fetch dynamically from /api/patient/<cr>/series
+      fetch(`/api/patient/${encodeURIComponent(crNumber)}/series`)
+        .then(res => res.json())
+        .then(data => {
+          if (detailsElem) {
+            detailsElem.textContent = `${data.patient_name} • ${data.age} • Gender: ${data.gender}`;
+          }
+          const mapped = (data.series || []).map(s => ({
+            id: s.id,
+            modality: s.modality,
+            date: s.date_of_test,
+            desc: s.series_description,
+            slices: s.instance_count,
+            uid: s.series_instance_uid,
+            url: s.viewer_url
+          }));
+          renderSeriesList(mapped);
+        })
+        .catch(err => {
+          renderSeriesList([]);
+        });
+    }
+
+    openModal('radiologyModal');
+  }
+
+  function renderSeriesList(seriesList) {
+    const listElem = document.getElementById('modalSeriesList');
+    const emptyElem = document.getElementById('modalNoSeries');
+    const countElem = document.getElementById('modalSeriesCount');
+
+    if (!listElem) return;
+    listElem.innerHTML = '';
+
+    if (!seriesList || seriesList.length === 0) {
+      if (emptyElem) emptyElem.classList.remove('hidden');
+      if (countElem) countElem.textContent = '0 Series';
+      return;
+    }
+
+    if (emptyElem) emptyElem.classList.add('hidden');
+    if (countElem) countElem.textContent = `${seriesList.length} ${seriesList.length === 1 ? 'Series' : 'Series'}`;
+
+    seriesList.forEach(s => {
+      const modalityColors = {
+        'CT': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+        'MR': 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+        'MRI': 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+        'CR': 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+        'DX': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+        'XA': 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+      };
+      const badgeClass = modalityColors[(s.modality || '').toUpperCase()] || 'bg-slate-800 text-slate-300 border-slate-700';
+
+      const card = document.createElement('a');
+      card.href = s.url;
+      card.className = "group block p-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/50 transition-all shadow-sm hover:shadow-cyan-500/10 cursor-pointer";
+      card.innerHTML = `
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center space-x-3 min-w-0">
+            <span class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs border ${badgeClass} shrink-0">
+              ${s.modality}
+            </span>
+            <div class="min-w-0">
+              <div class="font-bold text-white group-hover:text-cyan-300 text-sm flex items-center gap-2 truncate">
+                <span>${s.modality} - ${s.date || 'Study Date'}</span>
+                <span class="text-xs font-normal text-slate-400 hidden sm:inline">• ${s.desc}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-mono mt-0.5 flex flex-wrap items-center gap-3">
+                <span><i class="fa-solid fa-calendar-day mr-1 text-slate-500"></i>${s.date || 'N/A'}</span>
+                <span class="text-cyan-400"><i class="fa-solid fa-layer-group mr-1 text-slate-500"></i>${s.slices} ${s.slices === 1 ? 'slice' : 'slices'}</span>
+                ${s.uid ? `<span class="text-slate-500 hidden md:inline truncate max-w-[200px]" title="${s.uid}"><i class="fa-solid fa-fingerprint mr-1"></i>${s.uid.slice(-10)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 text-cyan-400 group-hover:text-cyan-300 font-semibold text-xs shrink-0">
+            <span class="hidden sm:inline">Launch Viewer</span>
+            <div class="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-cyan-500 group-hover:text-slate-950 border border-slate-700 group-hover:border-cyan-400 flex items-center justify-center transition-colors">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+      `;
+      listElem.appendChild(card);
+    });
+  }
+
+  function openEditModal(cr, name, age, gender) {
+    document.getElementById('edit_cr').value = cr;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_age').value = age;
+    document.getElementById('edit_gender').value = gender;
+    document.getElementById('editForm').action = '/patient/' + encodeURIComponent(cr) + '/edit';
+    openModal('editModal');
+  }
+
+  function openTrialModal(cr, assignedIds) {
+    document.getElementById('trialForm').action = '/patient/' + encodeURIComponent(cr) + '/assign_trials';
+    const checkboxes = document.querySelectorAll('.trial-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = assignedIds.includes(parseInt(cb.value));
+    });
+    openModal('trialModal');
+  }
+
+  function openCustomDataModal(cr) {
+    document.getElementById('customForm').action = '/patient/' + encodeURIComponent(cr) + '/custom_data';
+    openModal('customModal');
+  }
+
+  function toggleCustomInput(type) {
+    document.getElementById('custom_text_container').classList.toggle('hidden', type !== 'text');
+    document.getElementById('custom_link_container').classList.toggle('hidden', type !== 'link');
+    document.getElementById('custom_file_container').classList.toggle('hidden', type !== 'file');
+  }
+
+  // Real-Time Dashboard Live Telemetry Poller
+  let knownPatientCount = {{ total_patients }};
+  let isAutoReloading = false;
+
+  function pollCrawlerStatus() {
+    fetch('/api/crawler-status')
+      .then(res => res.json())
+      .then(data => {
+        const crawler = data.crawler;
+        const banner = document.getElementById('crawlerLiveBanner');
+
+        // Update top metric counters in real-time
+        const patientElem = document.getElementById('statTotalPatients');
+        const scanElem = document.getElementById('statTotalScans');
+        if (patientElem && data.total_patients !== undefined) patientElem.textContent = data.total_patients;
+        if (scanElem && data.total_scans !== undefined) scanElem.textContent = data.total_scans;
+
+        if (crawler && crawler.is_running) {
+          banner.classList.remove('hidden');
+          const detailsElem = document.getElementById('crawlerDetails');
+          const progressElem = document.getElementById('crawlerProgress');
+          const foldersElem = document.getElementById('crawlerFolders');
+          const ingestedElem = document.getElementById('crawlerIngested');
+          const skippedElem = document.getElementById('crawlerSkipped');
+
+          const filesScanned = (crawler.files_scanned !== undefined) ? crawler.files_scanned : (crawler.current_file_idx || 0);
+          if (progressElem) progressElem.textContent = filesScanned;
+          if (foldersElem) foldersElem.textContent = (crawler.folders_scanned !== undefined) ? crawler.folders_scanned : (data.folders_scanned || 0);
+          if (ingestedElem) ingestedElem.textContent = crawler.ingested || 0;
+          if (skippedElem) skippedElem.textContent = crawler.skipped || 0;
+
+          if (detailsElem) {
+            if (crawler.last_patient) {
+              detailsElem.textContent = `Extracting metadata • Latest: ${crawler.last_patient}`;
+            } else {
+              detailsElem.textContent = `Indexing Local Radiology Repository...`;
+            }
+          }
+
+          // If new patients have been added to SQLite by background crawler, refresh view smoothly
+          if (data.total_patients > knownPatientCount && !isAutoReloading) {
+            knownPatientCount = data.total_patients;
+            isAutoReloading = true;
+            setTimeout(() => { window.location.reload(); }, 2500);
+          }
+        } else {
+          banner.classList.add('hidden');
+          if (data.total_patients > knownPatientCount && !isAutoReloading) {
+            knownPatientCount = data.total_patients;
+            isAutoReloading = true;
+            window.location.reload();
+          }
+        }
+      })
+      .catch(err => {
+        // Suppress network polling errors silently
+      });
+  }
+
+  // Poll every 3 seconds for seamless real-time monitoring
+  setInterval(pollCrawlerStatus, 3000);
+  document.addEventListener('DOMContentLoaded', pollCrawlerStatus);
+</script>
+{% endblock %}

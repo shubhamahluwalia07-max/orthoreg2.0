@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Orthopedic Radiology Registry{% endblock %}</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ECFEFF',
+              500: '#06B6D4',
+              600: '#0891B2',
+              700: '#0E7490',
+            },
+            surface: {
+              main: '#090D16',
+              card: '#101726',
+              border: 'rgba(255, 255, 255, 0.08)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-[#090D16] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#0c1220]/80 backdrop-blur-md border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3 group">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
+              <i class="fa-solid fa-bone text-white text-lg"></i>
+            </div>
+            <div>
+              <span class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                ORTHOREG
+                <span class="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Clinical</span>
+              </span>
+              <p class="text-xs text-slate-400 hidden sm:block">Orthopedic Radiology Research Registry</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Navigation Links -->
+        {% if current_user.is_authenticated %}
+        <nav class="hidden md:flex items-center space-x-1">
+          <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'dashboard' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <i class="fa-solid fa-table-cells mr-1.5"></i> Patient Registry
+          </a>
+          <a href="{{ url_for('trials_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'trials_view' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <i class="fa-solid fa-vial-circle-check mr-1.5"></i> Curate Trials
+          </a>
+          {% if current_user.is_admin_or_pi %}
+          <a href="{{ url_for('drive_sync') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'drive_sync' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <i class="fa-brands fa-google-drive mr-1.5 text-emerald-400"></i> Drive Sync
+          </a>
+          {% endif %}
+        </nav>
+
+        <!-- User Profile & RBAC Role Pill -->
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2.5 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full">
+            <div class="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-cyan-400">
+              <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div class="text-xs">
+              <span class="font-semibold text-slate-200">{{ current_user.username }}</span>
+              <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono {% if current_user.is_admin_or_pi %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/30{% else %}bg-slate-700 text-slate-300{% endif %}">
+                {{ current_user.role }}
+              </span>
+            </div>
+          </div>
+
+          <a href="{{ url_for('logout') }}" title="Logout" class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </a>
+        </div>
+        {% else %}
+        <div>
+          <a href="{{ url_for('login') }}" class="px-4 py-2 text-sm font-medium rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors shadow-lg shadow-cyan-500/20">
+            Sign In
+          </a>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages Banner -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-2">
+          {% for category, message in messages %}
+            <div class="flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium shadow-md transition-all
+              {% if category == 'success' %}bg-emerald-950/40 border-emerald-600/40 text-emerald-300
+              {% elif category == 'danger' %}bg-rose-950/40 border-rose-600/40 text-rose-300
+              {% elif category == 'warning' %}bg-amber-950/40 border-amber-600/40 text-amber-300
+              {% else %}bg-cyan-950/40 border-cyan-600/40 text-cyan-300{% endif %}">
+              <div class="flex items-center space-x-2">
+                <i class="{% if category == 'success' %}fa-solid fa-circle-check text-emerald-400
+                          {% elif category == 'danger' %}fa-solid fa-circle-exclamation text-rose-400
+                          {% elif category == 'warning' %}fa-solid fa-triangle-exclamation text-amber-400
+                          {% else %}fa-solid fa-circle-info text-cyan-400{% endif %}"></i>
+                <span>{{ message }}</span>
+              </div>
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Body Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-[#090D16] py-6 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center space-x-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-mono">ORTHOREG PACS Engine v2.0 • HIPAA/IRB Compliant Mode</span>
+      </div>
+      <div>
+        <span>SQLite + pydicom + Cornerstone.js &copy; {{ now_year or 2026 }} Clinical Registry</span>
+      </div>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

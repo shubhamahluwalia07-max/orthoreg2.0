@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ trial.trial_name }} - Clinical Trial Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <!-- Top Breadcrumb & Actions Bar -->
+  <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <div class="flex items-center space-x-2 text-xs text-slate-400">
+        <a href="{{ url_for('trials_view') }}" class="hover:text-cyan-400 transition-colors flex items-center gap-1">
+          <i class="fa-solid fa-arrow-left"></i> Curate Trials
+        </a>
+        <span>/</span>
+        <span class="text-purple-400 font-mono font-semibold">{{ trial.trial_name }}</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <h2 class="text-2xl font-bold text-white font-mono flex items-center gap-2">
+          {{ trial.trial_name }}
+          <span class="text-xs px-2.5 py-0.5 rounded-full font-sans font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            EDC Protocol
+          </span>
+        </h2>
+      </div>
+      <p class="text-xs text-slate-400 max-w-3xl">{{ trial.description or 'Prospective clinical study protocol.' }}</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center flex-wrap gap-2">
+      {% if current_user.is_admin_or_pi %}
+      <button onclick="openEditTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}', {{ trial.target_sample_size or 50 }}, '{{ (trial.description or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', {{ trial.get_required_modalities()|tojson }})"
+         class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300 transition-all flex items-center">
+        <i class="fa-solid fa-pen-to-square mr-1.5 text-amber-400"></i> Edit Protocol
+      </button>
+
+      <button onclick="openDeleteTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}')"
+         class="px-3.5 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-xs font-semibold text-rose-300 transition-all flex items-center">
+        <i class="fa-solid fa-trash-can mr-1.5 text-rose-400"></i> Delete Trial
+      </button>
+
+      <button onclick="openModal('importTemplateModal')"
+         class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-cyan-300 transition-all flex items-center">
+        <i class="fa-solid fa-file-csv mr-1.5 text-cyan-400"></i> Import Data Template
+      </button>
+      
+      <button onclick="openModal('enrollPatientModal')"
+         class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-xs font-semibold text-purple-200 transition-all flex items-center">
+        <i class="fa-solid fa-user-plus mr-1.5"></i> Enroll Patient
+      </button>
+      {% endif %}
+
+      <a href="{{ url_for('export_trial_cohort', trial_id=trial.id) }}"
+         class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 transition-all flex items-center">
+        <i class="fa-solid fa-file-arrow-down mr-1.5"></i> Export Cohort CSV
+      </a>
+    </div>
+  </div>
+
+  <!-- Clinical Analytics Header -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    
+    <!-- 1. Recruitment Progress -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+          <span class="font-semibold uppercase tracking-wider">Recruitment Progress</span>
+          <span class="font-mono text-cyan-400 font-bold">{{ recruitment_percentage }}%</span>
+        </div>
+        <div class="flex items-baseline space-x-2">
+          <span class="text-3xl font-bold text-white font-mono">{{ recruited_count }}</span>
+          <span class="text-xs text-slate-400 font-mono">/ {{ target_sample_size }} Target</span>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+          <div class="bg-gradient-to-r from-cyan-500 to-blue-500 h-2.5 rounded-full transition-all duration-500"
+               style="width: {{ recruitment_percentage }}%"></div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
+          <span>
+            {% if remaining_needed > 0 %}
+              {{ remaining_needed }} more needed
+            {% else %}
+              <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-check"></i> Target reached</span>
+            {% endif %}
+          </span>
+          <span class="text-slate-500 font-mono">Target: {{ target_sample_size }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 2. Data Completeness Gauge -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden flex items-center justify-between">
+      <div class="flex-1 pr-3">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Data Completeness</p>
+        <div class="flex items-baseline space-x-1.5">
+          <span class="text-3xl font-bold font-mono {% if overall_completeness >= 80 %}text-emerald-400{% elif overall_completeness >= 50 %}text-amber-400{% else %}text-rose-400{% endif %}">
+            {{ overall_completeness }}%
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1.5 leading-snug">
+          {{ total_criteria_fulfilled }} of {{ total_criteria_possible }} required fields & modalities filled.
+        </p>
+      </div>
+
+      <!-- Circular Progress Ring SVG -->
+      <div class="relative w-20 h-20 shrink-0 flex items-center justify-center">
+        <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 36 36">
+          <path
+            class="text-slate-800"
+            stroke-width="3.5"
+            stroke="currentColor"
+            fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+          <path
+            class="{% if overall_completeness >= 80 %}text-emerald-400{% elif overall_completeness >= 50 %}text-amber-400{% else %}text-rose-400{% endif %} transition-all duration-700 ease-out"
+            stroke-dasharray="{{ overall_completeness }}, 100"
+            stroke-width="3.5"
+            stroke-linecap="round"
+            stroke="currentColor"
+            fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+          />
+        </svg>
+        <span class="absolute text-xs font-mono font-bold text-white">
+          {{ overall_completeness|int }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- 3. Required Radiology Modalities Compliance -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Protocol Modalities</p>
+        <div class="flex flex-wrap gap-1.5">
+          {% for m, m_info in modality_stats.items() %}
+            <div class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 text-xs">
+              <span class="font-mono font-bold text-cyan-400">{{ m }}</span>
+              <span class="text-[10px] text-slate-400 font-mono">({{ m_info.count }}/{{ recruited_count }})</span>
+            </div>
+          {% else %}
+            <span class="text-xs text-slate-500 italic">No specific modalities mandated</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span>Modalities Mandated:</span>
+        <span class="font-mono font-bold text-white">{{ required_modalities|length }}</span>
+      </div>
+    </div>
+
+    <!-- 4. Dynamic EDC Schema Summary -->
+    <div class="glass-panel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+          <span class="font-semibold uppercase tracking-wider">Dynamic EDC Schema</span>
+          <button onclick="openModal('importTemplateModal')" class="text-cyan-400 hover:underline text-[11px]">
+            Change
+          </button>
+        </div>
+        <div class="text-2xl font-bold text-white font-mono">
+          {{ schema|length }} <span class="text-xs text-slate-400 font-sans font-normal">Variables</span>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-1">
+          {% for f in schema[:4] %}
+            <span class="px-2 py-0.5 rounded bg-purple-950/60 border border-purple-800/60 text-[10px] font-mono text-purple-300">
+              {{ f.name }} <span class="opacity-60">({{ f.type }})</span>
+            </span>
+          {% endfor %}
+          {% if schema|length > 4 %}
+            <span class="px-1.5 py-0.5 text-[10px] text-slate-400">+{{ schema|length - 4 }} more</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-3 pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span>Template Source:</span>
+        <span class="font-mono text-cyan-400">{% if schema %}CSV Template{% else %}None{% endif %}</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Two-Pane Layout: Left Sidebar Patients, Right Dynamic Form -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT SIDEBAR: Recruited Patient List -->
+    <div class="lg:col-span-4 glass-panel p-4 rounded-2xl space-y-3">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-mono">
+            Recruited Patients
+          </h3>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            {{ patient_stats|length }}
+          </span>
+        </div>
+        {% if current_user.is_admin_or_pi %}
+        <button onclick="openModal('enrollPatientModal')" class="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold">
+          <i class="fa-solid fa-plus text-[10px]"></i> Enroll
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- Quick Search Filter in Sidebar -->
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+        <input type="text" id="patientFilterInput" onkeyup="filterPatientSidebar()" placeholder="Filter by CR or Name..."
+               class="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs">
+      </div>
+
+      <!-- Scrollable Patient Cards Container -->
+      <div class="max-h-[680px] overflow-y-auto space-y-2 pr-1" id="patientSidebarList">
+        {% for ps in patient_stats %}
+        {% set p = ps.patient %}
+        {% set is_active = (active_patient_stat and active_patient_stat.patient.cr_number == p.cr_number) %}
+        <a href="{{ url_for('trial_dashboard', trial_id=trial.id, cr_number=p.cr_number) }}"
+           data-cr="{{ p.cr_number|lower }}"
+           data-name="{{ (p.patient_name or '')|lower }}"
+           class="patient-sidebar-card block p-3.5 rounded-xl border transition-all {% if is_active %}bg-gradient-to-r from-purple-950/70 to-slate-900 border-purple-500 shadow-md shadow-purple-500/10 text-white{% else %}bg-slate-900/40 hover:bg-slate-800/40 border-slate-800 text-slate-300{% endif %}">
+          
+          <div class="flex items-center justify-between">
+            <span class="font-mono font-bold text-xs {% if is_active %}text-cyan-300{% else %}text-cyan-400{% endif %}">
+              {{ p.cr_number }}
+            </span>
+            
+            <!-- Completeness Mini-Badge -->
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono {% if ps.completeness_pct >= 100 %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% elif ps.completeness_pct >= 50 %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% else %}bg-rose-500/20 text-rose-300 border border-rose-500/30{% endif %}">
+              {{ ps.completeness_pct|int }}%
+            </span>
+          </div>
+
+          <div class="mt-1 flex items-center justify-between text-xs">
+            <span class="font-medium truncate max-w-[170px] text-white">{{ p.patient_name or 'Unknown Patient' }}</span>
+            <span class="text-slate-400 text-[11px]">{{ p.age or 'N/A' }} • {{ p.gender or 'O' }}</span>
+          </div>
+
+          <!-- Modalities & Completeness Breakdown -->
+          <div class="mt-2.5 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/60">
+            <span class="flex items-center gap-1">
+              <i class="fa-solid fa-layer-group text-[10px] text-slate-500"></i>
+              {{ p.scans|length }} scan(s)
+            </span>
+            {% if ps.missing_modalities %}
+              <span class="text-rose-400 text-[10px] font-mono" title="Missing required modalities: {{ ps.missing_modalities|join(', ') }}">
+                <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Missing {{ ps.missing_modalities[0] }}
+              </span>
+            {% else %}
+              <span class="text-emerald-400 text-[10px] font-mono">
+                <i class="fa-solid fa-check mr-0.5"></i> Modalities OK
+              </span>
+            {% endif %}
+          </div>
+        </a>
+        {% else %}
+        <div class="p-8 text-center text-slate-400">
+          <i class="fa-solid fa-users-slash text-3xl text-slate-600 mb-2"></i>
+          <p class="text-xs font-semibold text-slate-300">No patients recruited yet.</p>
+          {% if current_user.is_admin_or_pi %}
+          <button onclick="openModal('enrollPatientModal')" class="mt-3 px-3 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs transition-colors">
+            Enroll First Patient
+          </button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- MAIN PANE: Dynamic EDC Data Entry Form -->
+    <div class="lg:col-span-8 space-y-4">
+      {% if active_patient_stat %}
+      {% set p = active_patient_stat.patient %}
+      {% set p_data = active_patient_stat.data %}
+
+      <!-- Patient Banner -->
+      <div class="glass-panel p-5 rounded-2xl bg-gradient-to-r from-slate-900/90 to-purple-950/30 border border-slate-800">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-mono text-lg font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-800/60 px-2.5 py-0.5 rounded-lg">
+                {{ p.cr_number }}
+              </span>
+              <h3 class="text-lg font-bold text-white">{{ p.patient_name }}</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1 flex items-center space-x-3">
+              <span><strong>Demographics:</strong> {{ p.age or 'Unknown Age' }} • {{ p.gender or 'Unknown' }}</span>
+              <span>•</span>
+              <span><strong>Registered:</strong> {{ p.created_at.strftime('%Y-%m-%d') }}</span>
+              <span>•</span>
+              <span><strong>Total Scans:</strong> {{ p.scans|length }}</span>
+            </p>
+          </div>
+
+          <!-- PACS & Actions -->
+          <div class="flex items-center space-x-2">
+            {% if p.scans %}
+            <a href="{{ url_for('dicom_viewer', scan_id=p.scans[0].id) }}"
+               class="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-slate-950 border border-cyan-500/40 text-xs font-semibold transition-all flex items-center shadow-lg shadow-cyan-500/10">
+              <i class="fa-solid fa-x-ray mr-1.5"></i> Open PACS Viewer
+            </a>
+            {% endif %}
+
+            {% if current_user.is_admin_or_pi %}
+            <form method="POST" action="{{ url_for('remove_trial_patient', trial_id=trial.id, cr_number=p.cr_number) }}" onsubmit="return confirm('Remove patient {{ p.cr_number }} from this trial cohort?');">
+              <button type="submit" class="px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 text-xs font-semibold transition-all" title="Remove from Trial">
+                <i class="fa-solid fa-user-minus"></i>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Modalities Checklist Bar for this Patient -->
+        <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-3">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">Modality Compliance:</span>
+          {% for m in required_modalities %}
+            {% set has_mod = (m.upper() in active_patient_stat.modalities_present) %}
+            <span class="px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 {% if has_mod %}bg-emerald-950/60 text-emerald-300 border border-emerald-700/60{% else %}bg-rose-950/60 text-rose-300 border border-rose-800/60{% endif %}">
+              <i class="fa-solid {% if has_mod %}fa-circle-check text-emerald-400{% else %}fa-circle-xmark text-rose-400{% endif %}"></i>
+              {{ m }} {% if has_mod %}Verified{% else %}Missing{% endif %}
+            </span>
+          {% else %}
+            <span class="text-xs text-slate-500 italic">No specific modalities mandated</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Dynamic EDC Data Entry Form -->
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-clipboard-question text-purple-400"></i>
+              Dynamic Electronic Data Capture (EDC)
+            </h4>
+            <p class="text-xs text-slate-400 mt-0.5">Clinical trial parameters generated dynamically from imported template schema.</p>
+          </div>
+          <span class="text-xs font-mono text-purple-300 bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-800/50">
+            {{ active_patient_stat.fields_fulfilled }}/{{ schema|length }} Parameters Completed
+          </span>
+        </div>
+
+        {% if schema %}
+        <form method="POST" action="{{ url_for('save_trial_patient_edc', trial_id=trial.id, cr_number=p.cr_number) }}" enctype="multipart/form-data">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in schema %}
+            {% set f_name = field.name %}
+            {% set f_type = field.type %}
+            {% set current_val = p_data.get(f_name, '') %}
+            
+            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80 space-y-2 hover:border-slate-700 transition-colors">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-semibold text-slate-200">
+                  {{ f_name }}
+                </label>
+                <!-- Field Type Pill -->
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono {% if f_type == 'Number' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% elif f_type == 'Date' %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% elif f_type == 'File' or f_type == 'Image' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
+                  {{ f_type }}
+                </span>
+              </div>
+
+              <!-- Input Rendered According to Inferred Type -->
+              {% if f_type == 'Number' %}
+                <input type="number" step="any" name="field_{{ loop.index0 }}" value="{{ current_val }}"
+                       placeholder="Enter numeric value..."
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono">
+              {% elif f_type == 'Date' %}
+                <input type="date" name="field_{{ loop.index0 }}" value="{{ current_val }}"
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono">
+              {% elif f_type == 'File' or f_type == 'Image' %}
+                <div class="space-y-2">
+                  {% if current_val %}
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950 border border-slate-800 text-xs">
+                      <a href="{{ current_val }}" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1.5 truncate max-w-[200px]">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>{{ current_val.split('/')[-1] }}</span>
+                      </a>
+                      <span class="text-[10px] text-emerald-400 font-mono"><i class="fa-solid fa-check"></i> Stored</span>
+                    </div>
+                  {% endif %}
+                  <input type="file" name="file_{{ loop.index0 }}"
+                         class="glass-input w-full px-3 py-1.5 rounded-xl text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-cyan-500/20 file:text-cyan-300 hover:file:bg-cyan-500/30">
+                  <input type="hidden" name="existing_file_{{ loop.index0 }}" value="{{ current_val }}">
+                </div>
+              {% else %}
+                <input type="text" name="field_{{ loop.index0 }}" value="{{ current_val }}"
+                       placeholder="Enter {{ f_name }}..."
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="mt-6 flex items-center justify-between pt-4 border-t border-slate-800">
+            <span class="text-xs text-slate-400">
+              <i class="fa-solid fa-shield-halved text-cyan-400 mr-1"></i> Changes are recorded to patient trial history.
+            </span>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> Save EDC Record
+            </button>
+          </div>
+
+        </form>
+        {% else %}
+        <!-- Empty Schema State -->
+        <div class="p-8 text-center text-slate-400 border border-dashed border-slate-800 rounded-2xl">
+          <i class="fa-solid fa-file-csv text-4xl text-cyan-400 mb-3"></i>
+          <h4 class="text-sm font-bold text-white">No Data Template Schema Defined</h4>
+          <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+            Upload a CSV template with column headers for this trial. The system will automatically infer data types (Text, Number, Date, Image/File) and render your custom data capture forms.
+          </p>
+          {% if current_user.is_admin_or_pi %}
+          <button onclick="openModal('importTemplateModal')" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20">
+            <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Import CSV Data Template
+          </button>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+
+      {% else %}
+      <!-- No Patient Selected State -->
+      <div class="glass-panel p-16 rounded-2xl text-center text-slate-400">
+        <i class="fa-solid fa-id-card-clip text-5xl text-slate-600 mb-4"></i>
+        <h3 class="text-lg font-bold text-white">Select a Patient to Enter Clinical Data</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          Choose a patient from the left sidebar to view their enrolled details, check modality fulfillment, and complete dynamic EDC clinical parameters.
+        </p>
+        {% if patient_stats %}
+        <a href="{{ url_for('trial_dashboard', trial_id=trial.id, cr_number=patient_stats[0].patient.cr_number) }}"
+           class="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold shadow-lg shadow-purple-500/20 transition-all">
+          <i class="fa-solid fa-user-pen"></i> Select {{ patient_stats[0].patient.cr_number }}
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Enroll Patient Modal (Admin/PI) -->
+{% if current_user.is_admin_or_pi %}
+<div id="enrollPatientModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-user-plus text-purple-400"></i> Enroll Patient into Trial
+      </h3>
+      <button onclick="closeModal('enrollPatientModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('enroll_trial_patient', trial_id=trial.id) }}">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Select Registry Patient</label>
+          {% if available_patients %}
+          <select name="cr_number" required class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            {% for ap in available_patients %}
+              <option value="{{ ap.cr_number }}">
+                {{ ap.cr_number }} — {{ ap.patient_name }} ({{ ap.age or 'N/A' }} • {{ ap.gender or 'O' }})
+              </option>
+            {% endfor %}
+          </select>
+          {% else %}
+          <p class="text-xs text-amber-400">All current registry patients are already enrolled in this trial.</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('enrollPatientModal')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700">Cancel</button>
+        {% if available_patients %}
+        <button type="submit" class="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-semibold shadow-lg shadow-purple-500/20">Enroll Patient</button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Import Data Template Modal -->
+<div id="importTemplateModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <h3 class="text-base font-bold text-white flex items-center gap-2">
+        <i class="fa-solid fa-file-csv text-cyan-400"></i> Import Data Template
+      </h3>
+      <button onclick="closeModal('importTemplateModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('import_trial_template', trial_id=trial.id) }}" enctype="multipart/form-data">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Target Trial</label>
+          <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs text-purple-300 font-bold">
+            {{ trial.trial_name }}
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Upload CSV Template File <span class="text-rose-400">*</span></label>
+          <input type="file" name="template_file" accept=".csv" required class="glass-input w-full px-3 py-2 rounded-xl text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-cyan-500/20 file:text-cyan-300 hover:file:bg-cyan-500/30">
+          <p class="text-[11px] text-slate-400 mt-2">
+            The backend reads the FIRST row of this CSV to extract column names and infer data types (Text, Number, Date, Image/File) to dynamically generate the required data schema for this trial.
+          </p>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('importTemplateModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-semibold text-slate-950 shadow-lg shadow-cyan-500/20">Import & Generate Schema</button>
+      </div>
+    </form>
+<!-- Edit Clinical Trial Modal -->
+<div id="editTrialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-amber-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div class="flex items-center space-x-2.5">
+        <span class="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 text-base">
+          <i class="fa-solid fa-pen-to-square"></i>
+        </span>
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Protocol Parameters</h3>
+          <p class="text-[11px] text-slate-400">Update clinical trial constraints and metadata</p>
+        </div>
+      </div>
+      <button onclick="closeModal('editTrialModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="editTrialForm" method="POST" action="">
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Trial Protocol Identifier <span class="text-cyan-400">*</span></label>
+            <input type="text" id="edit_trial_name" name="trial_name" required
+                   class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono uppercase">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Target Sample Size</label>
+            <input type="number" id="edit_target_sample_size" name="target_sample_size" min="1" max="10000"
+                   class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Protocol Description</label>
+          <textarea id="edit_description" name="description" rows="3"
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Required Radiology Modalities</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
+              <input type="checkbox" name="required_modalities" value="CR" id="edit_mod_CR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
+              <span class="font-mono">CR (X-Ray)</span>
+            </label>
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
+              <input type="checkbox" name="required_modalities" value="CT" id="edit_mod_CT" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
+              <span class="font-mono">CT (Computed)</span>
+            </label>
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
+              <input type="checkbox" name="required_modalities" value="MR" id="edit_mod_MR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
+              <span class="font-mono">MR (MRI)</span>
+            </label>
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
+              <input type="checkbox" name="required_modalities" value="DX" id="edit_mod_DX" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
+              <span class="font-mono">DX (Digital)</span>
+            </label>
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
+              <input type="checkbox" name="required_modalities" value="SR" id="edit_mod_SR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
+              <span class="font-mono">SR (Report)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('editTrialModal')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-semibold text-slate-950 shadow-lg shadow-amber-500/20">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Clinical Trial Safety Modal -->
+<div id="deleteTrialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-rose-500/40 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div class="flex items-center space-x-2.5">
+        <span class="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30 text-base">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </span>
+        <div>
+          <h3 class="text-base font-bold text-white">Delete Research Trial</h3>
+          <p class="text-[11px] text-slate-400">Strict safety preservation enabled</p>
+        </div>
+      </div>
+      <button onclick="closeModal('deleteTrialModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="deleteTrialForm" method="POST" action="">
+      <p class="text-xs text-slate-300 mb-3">
+        Are you sure you want to drop trial <strong id="delete_trial_name" class="text-white font-mono"></strong> from the database?
+      </p>
+
+      <div class="p-3.5 rounded-xl bg-rose-950/30 border border-rose-800/40 text-xs space-y-2 mb-4 text-rose-200">
+        <div class="font-bold flex items-center gap-1.5 text-rose-300">
+          <i class="fa-solid fa-shield-halved text-sm"></i>
+          Strict Patient & Radiology Safety:
+        </div>
+        <p class="text-[11px] leading-relaxed text-slate-300">
+          Deleting a trial <strong>strictly unlinks</strong> it from enrolled patients and scans. 
+          Underlying patient profiles, radiology DICOM series, and image files in the registry 
+          <strong class="text-emerald-400">will remain 100% intact and preserved</strong>.
+        </p>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('deleteTrialModal')" class="px-3.5 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700">Cancel</button>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/30">Delete Trial</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('hidden');
+  }
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  }
+
+  function openEditTrialModal(trialId, name, sampleSize, desc, reqMods) {
+    document.getElementById('editTrialForm').action = '/trials/' + trialId + '/edit';
+    document.getElementById('edit_trial_name').value = name || '';
+    document.getElementById('edit_target_sample_size').value = sampleSize || 50;
+    document.getElementById('edit_description').value = desc || '';
+
+    const mods = Array.isArray(reqMods) ? reqMods.map(m => m.toUpperCase()) : [];
+    document.querySelectorAll('.edit-mod-cb').forEach(cb => {
+      cb.checked = mods.includes(cb.value.toUpperCase());
+    });
+
+    openModal('editTrialModal');
+  }
+
+  function openDeleteTrialModal(trialId, name) {
+    document.getElementById('deleteTrialForm').action = '/trials/' + trialId + '/delete';
+    const nameEl = document.getElementById('delete_trial_name');
+    if (nameEl) nameEl.textContent = name || '';
+    openModal('deleteTrialModal');
+  }
+
+  // Live sidebar search filtering
+  function filterPatientSidebar() {
+    var input = document.getElementById('patientFilterInput');
+    var filter = input.value.toLowerCase().trim();
+    var cards = document.getElementsByClassName('patient-sidebar-card');
+    for (var i = 0; i < cards.length; i++) {
+      var cr = cards[i].getAttribute('data-cr') || '';
+      var name = cards[i].getAttribute('data-name') || '';
+      if (cr.indexOf(filter) > -1 || name.indexOf(filter) > -1) {
+        cards[i].style.display = "";
+      } else {
+        cards[i].style.display = "none";
+      }
+    }
+  }
+</script>
+{% endblock %}

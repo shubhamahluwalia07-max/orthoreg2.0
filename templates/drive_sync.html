@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Radiology Data Sync - Orthopedic Radiology Registry{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+  <!-- Header Card -->
+  <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-2xl">
+        <i class="fa-solid fa-hard-drive"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white">Radiology Data Extraction & Sync Console</h2>
+        <p class="text-xs text-slate-400 mt-0.5">High-speed local filesystem indexing (Google Drive for Desktop mirror) & SQLite metadata sync</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      {% if is_local_available %}
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Local Mirror Detected
+        </span>
+      {% else %}
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span> Local Path Not Found
+        </span>
+      {% endif %}
+      {% if is_configured %}
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5">
+          <i class="fa-brands fa-google-drive text-xs"></i> API Ready
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Primary Option: Local Filesystem Crawler (Google Drive for Desktop) -->
+  <div class="glass-panel p-6 rounded-2xl space-y-4 border-cyan-500/30 bg-gradient-to-b from-cyan-950/20 to-slate-900/60">
+    <div class="flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+        <i class="fa-solid fa-bolt-lightning text-amber-400"></i> Lightning-Fast Local Directory Crawler (Recommended)
+      </h3>
+      <span class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded">
+        Zero Network Latency
+      </span>
+    </div>
+    <p class="text-xs text-slate-300">
+      Since Google Drive for Desktop mirrors files locally, this engine bypasses remote API rate limits and network latency. It performs a recursive <code class="text-cyan-400 font-mono">os.walk()</code>, extracting clinical metadata via <code class="text-cyan-400 font-mono">pydicom.dcmread(stop_before_pixels=True)</code> in milliseconds and saving the local file path directly into SQLite.
+    </p>
+
+    <form method="POST" action="{{ url_for('drive_sync') }}" class="space-y-4 pt-2">
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-semibold text-slate-200">Local Directory Path</label>
+          <button type="button" onclick="document.getElementById('local_path_input').value = '{{ local_drive_path }}'"
+            class="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 underline flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset to Default
+          </button>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <input type="text" id="local_path_input" name="target_path" required
+            value="{{ local_drive_path }}"
+            placeholder="e.g. D:\RADIOLOGY DATA"
+            class="glass-input w-full pl-10 pr-3 py-2.5 rounded-xl text-xs font-mono placeholder-slate-500 text-white">
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+          <span>Targeting mirrored Google Drive for Desktop directory: <strong class="text-slate-200">{{ local_drive_path }}</strong></span>
+          <span class="font-mono {% if is_local_available %}text-emerald-400{% else %}text-amber-400{% endif %}">
+            Status: {% if is_local_available %}Ready &amp; Accessible{% else %}Path not found{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-1">
+        <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info text-cyan-400"></i>
+          Runs asynchronously in background thread without freezing web server.
+        </div>
+        <button type="submit"
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-semibold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center cursor-pointer">
+          <i class="fa-solid fa-play mr-2"></i> Initiate Local Directory Scan
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Secondary Option: Remote Google Drive API Crawler (Fallback) -->
+  <div class="glass-panel p-6 rounded-2xl space-y-4">
+    <div class="flex items-center justify-between">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider text-slate-300 flex items-center gap-2">
+        <i class="fa-brands fa-google-drive text-emerald-400"></i> Remote Google Drive API Crawler (Cloud Fallback)
+      </h3>
+      <span class="text-[11px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">
+        API Ingestion
+      </span>
+    </div>
+    <p class="text-xs text-slate-400">
+      Use this method if accessing an external Google Drive folder not mounted on the local filesystem. Requires valid OAuth <code class="text-slate-300 font-mono">credentials.json</code>.
+    </p>
+
+    <form method="POST" action="{{ url_for('drive_sync') }}" class="space-y-4 pt-2">
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="block text-xs font-semibold text-slate-300">Target Google Drive Folder ID</label>
+          <button type="button" onclick="document.getElementById('folder_id_input').value = '{{ default_drive_folder_id }}'"
+            class="text-[11px] font-mono text-cyan-400 hover:text-cyan-300 underline flex items-center gap-1">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> Use Master Folder ID
+          </button>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </div>
+          <input type="text" id="folder_id_input" name="target_path" required
+            value="{{ default_drive_folder_id }}"
+            placeholder="e.g. 1eEnoJi0hYHgrPmtWJub0fA6W_oPOL2iR"
+            class="glass-input w-full pl-10 pr-3 py-2.5 rounded-xl text-xs font-mono placeholder-slate-500">
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+          <span>Found in Drive URL: drive.google.com/drive/folders/<strong>[FOLDER_ID]</strong></span>
+          <span class="font-mono text-slate-400">Master: <code class="text-cyan-400 font-semibold">{{ default_drive_folder_id }}</code></span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end">
+        <button type="submit"
+          class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-all flex items-center cursor-pointer">
+          <i class="fa-solid fa-cloud mr-2 text-cyan-400"></i> Trigger Remote API Sync
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Real-time Crawler Status Card -->
+  <div class="glass-panel p-6 rounded-2xl space-y-3">
+    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+      <i class="fa-solid fa-chart-line text-cyan-400"></i> Background Sync Engine Telemetry
+    </h3>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+      <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-xs text-slate-400 font-mono">Engine Status</p>
+        <h4 class="text-sm font-bold font-mono mt-1 {% if crawler.is_running %}text-amber-400 animate-pulse{% else %}text-emerald-400{% endif %}">
+          {% if crawler.is_running %}RUNNING{% else %}IDLE / READY{% endif %}
+        </h4>
+      </div>
+      <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-xs text-slate-400 font-mono">Total Files Ingested</p>
+        <h4 class="text-xl font-bold text-emerald-400 font-mono mt-1">{{ crawler.ingested or 0 }}</h4>
+      </div>
+      <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-xs text-slate-400 font-mono">Files Skipped (Duplicate)</p>
+        <h4 class="text-xl font-bold text-slate-400 font-mono mt-1">{{ crawler.skipped or 0 }}</h4>
+      </div>
+      <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-center">
+        <p class="text-xs text-slate-400 font-mono">Directories Traversed</p>
+        <h4 class="text-xl font-bold text-cyan-400 font-mono mt-1">{{ crawler.folders_scanned or 0 }}</h4>
+      </div>
+    </div>
+    {% if crawler.current_folder %}
+    <p class="text-[11px] font-mono text-slate-400 pt-1">
+      Active Target: <span class="text-cyan-300">{{ crawler.current_folder }}</span>
+    </p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

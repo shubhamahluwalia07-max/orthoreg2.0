@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+
+{% block title %}DICOM PACS Viewer - {{ patient.patient_name }} ({{ scan.modality }}){% endblock %}
+
+{% block extra_head %}
+<!-- Three.js & OrbitControls for 3D Volume Reconstruction -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="h-[calc(100vh-140px)] flex flex-col space-y-2.5">
+
+  <!-- Top Toolbar & Clinical Header -->
+  <div class="glass-panel px-4 py-2 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+    
+    <!-- Patient & Scan Summary Info -->
+    <div class="flex items-center space-x-3">
+      <a href="{{ url_for('dashboard') }}" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Back to Registry">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-white text-sm">{{ patient.patient_name }}</span>
+          <span class="font-mono bg-cyan-950/80 text-cyan-400 border border-cyan-800/80 px-2 py-0.5 rounded text-[11px]">{{ patient.cr_number }}</span>
+          <span class="px-2 py-0.5 rounded font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">{{ scan.modality }}</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-0.5">
+          {{ scan.series_description or 'Orthopedic Evaluation' }} • {{ scan.date_of_test or 'N/A' }} • {{ patient.age or 'Unknown' }} • {{ patient.gender or 'Other' }} • <span class="text-cyan-400 font-mono">{{ scan.instance_count or 1 }} slice{{ '' if (scan.instance_count or 1) == 1 else 's' }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- PACS Manipulation Tools -->
+    <div class="flex items-center flex-wrap gap-1.5">
+
+      <!-- Hybrid Streaming Toggle (Local Host vs Google Cloud) -->
+      <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center space-x-1 shadow-inner" title="Hybrid Stream Architecture: Local Host vs Remote Google Cloud Direct Stream">
+        <button id="btnStreamLocal" onclick="switchStreamMode('local')"
+                class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+          <i class="fa-solid fa-server text-cyan-400"></i>
+          <span>Local Host</span>
+        </button>
+        <button id="btnStreamCloud" onclick="switchStreamMode('cloud')"
+                class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200">
+          <i class="fa-brands fa-google-drive text-emerald-400"></i>
+          <span>Google Cloud</span>
+        </button>
+      </div>
+
+      <!-- Multi-Slice Scroller if Series has >1 slice -->
+      {% if slice_count and slice_count > 1 %}
+      <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-cyan-500/40 flex items-center space-x-2 shadow-inner">
+        <span class="text-[11px] text-cyan-400 font-mono font-semibold">Slice:</span>
+        <input type="range" id="sliceSlider" min="0" max="{{ slice_count - 1 }}" value="0"
+               class="w-24 accent-cyan-400 cursor-pointer" oninput="changeSlice(this.value)">
+        <span id="sliceNumber" class="text-white font-mono text-[11px] font-bold">1 / {{ slice_count }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Interactive Tool Selectors -->
+      <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center space-x-1">
+        <button id="toolCrosshairs" onclick="setActiveTool('Crosshairs')" class="viewer-tool-btn active px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white flex items-center gap-1.5" title="Synchronized 3D Crosshairs / Orthogonal MPR Navigation">
+          <i class="fa-solid fa-crosshairs text-teal-400"></i> <span class="hidden sm:inline">Crosshairs</span>
+        </button>
+        <button id="toolWL" onclick="setActiveTool('Wwwc')" class="viewer-tool-btn px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white flex items-center gap-1.5" title="Window / Level (Left Click & Drag)">
+          <i class="fa-solid fa-circle-half-stroke text-cyan-400"></i> <span class="hidden sm:inline">W/L</span>
+        </button>
+        <button id="toolZoom" onclick="setActiveTool('Zoom')" class="viewer-tool-btn px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white flex items-center gap-1.5" title="Zoom Tool">
+          <i class="fa-solid fa-magnifying-glass-plus text-blue-400"></i> <span class="hidden sm:inline">Zoom</span>
+        </button>
+        <button id="toolPan" onclick="setActiveTool('Pan')" class="viewer-tool-btn px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white flex items-center gap-1.5" title="Pan / Move">
+          <i class="fa-solid fa-arrows-up-down-left-right text-emerald-400"></i> <span class="hidden sm:inline">Pan</span>
+        </button>
+      </div>
+
+      <!-- Orthopedic Window/Level Presets -->
+      <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-800 flex items-center space-x-1">
+        <button onclick="applyWLPreset(2000, 400, 'Bone')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1" title="Orthopedic Bone Window (WW: 2000, WL: 400)">
+          <i class="fa-solid fa-bone text-cyan-400"></i> Bone
+        </button>
+        <button onclick="applyWLPreset(400, 40, 'Soft Tissue')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1" title="Soft Tissue Window (WW: 400, WL: 40)">
+          <i class="fa-solid fa-heart-pulse text-rose-400"></i> Soft Tissue
+        </button>
+        <button onclick="applyWLPreset(1500, -500, 'Joint / Contrast')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold flex items-center gap-1" title="Joint Contrast (WW: 1500, WL: -500)">
+          <i class="fa-solid fa-lungs text-blue-400"></i> Contrast
+        </button>
+      </div>
+
+      <!-- 3D Toggle Button -->
+      <button id="btnToggle3D" onclick="toggle3DVolume()" class="px-3 py-1.5 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 hover:text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all shadow-sm" title="Toggle 3D Multi-Planar Reconstruction (MPR) Volume">
+        <i class="fa-solid fa-cube text-indigo-400"></i>
+        <span>Toggle 3D</span>
+      </button>
+
+      <!-- Invert, Reset, Fullscreen -->
+      <div class="flex items-center space-x-1">
+        <button onclick="toggleInvert()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white" title="Invert Grayscale (Black/White)">
+          <i class="fa-solid fa-circle-half-stroke"></i>
+        </button>
+        <button onclick="resetViewport()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white" title="Reset Orientation & Zoom">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button onclick="toggleFullscreen()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white" title="Fullscreen Viewer">
+          <i class="fa-solid fa-expand"></i>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Viewer Main Workspace -->
+  <div class="flex-1 flex gap-2.5 min-h-0">
+    
+    <!-- Left Series Drawer for Patient -->
+    <div class="w-56 glass-panel rounded-2xl p-3 flex flex-col space-y-2 overflow-y-auto hidden lg:flex shrink-0">
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between pb-2 border-b border-slate-800">
+        <span>Patient Series</span>
+        <span class="font-mono text-cyan-400">{{ patient_scans|length }}</span>
+      </div>
+      <div class="space-y-2 overflow-y-auto pr-1">
+        {% for s in patient_scans %}
+        <a href="{{ url_for('dicom_viewer', scan_id=s.id) }}"
+           class="block p-2.5 rounded-xl border text-xs transition-all {% if s.id == scan.id %}bg-cyan-500/10 border-cyan-500/50 shadow-md shadow-cyan-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-white">{{ s.modality }}</span>
+            <span class="font-mono text-[10px] text-cyan-400">{{ s.date_of_test or 'N/A' }}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1 truncate">{{ s.series_description or s.file_name }}</p>
+          <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500">
+            <span>{{ s.instance_count or 1 }} slice{{ '' if (s.instance_count or 1) == 1 else 's' }}</span>
+            {% if s.id == scan.id %}
+              <span class="text-cyan-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-eye text-[9px]"></i> Active</span>
+            {% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Main Viewport Container -->
+    <div id="dicomViewportContainer" class="flex-1 rounded-2xl overflow-hidden relative flex flex-col bg-slate-950 border border-slate-800/80 shadow-2xl">
+      
+      <!-- Global Loading Spinner -->
+      <div id="viewerLoading" class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 text-white space-y-3">
+        <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        <p id="loadingTitle" class="text-sm font-semibold font-mono text-cyan-400">Initializing Cornerstone3D Clinical MPR...</p>
+        <p id="loadingSubtitle" class="text-xs text-slate-400 font-mono">Executing Strict Spatial Sorting by ImagePositionPatient & Orientation Normal</p>
+      </div>
+
+      <!-- MPR Grid Viewports Container (3-column by default, 2x2 grid when 3D is active) -->
+      <div id="mprGrid" class="w-full h-full grid grid-cols-1 md:grid-cols-3 gap-1.5 p-1.5 bg-slate-950">
+        
+        <!-- PANE 1: Axial (Transverse, Z-axis) -->
+        <div id="paneAxial" class="relative bg-black rounded-xl overflow-hidden border border-amber-500/40 flex flex-col group select-none min-h-0">
+          <!-- Pane Badge & Coordinates -->
+          <div class="absolute top-2 left-2 z-20 font-mono text-[11px] flex items-center gap-2 pointer-events-none">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold uppercase tracking-wider">Axial (Z)</span>
+            <span id="badgeAxialZ" class="text-slate-200 bg-black/70 px-1.5 py-0.5 rounded border border-slate-700/60 font-mono">Z: 1 / {{ slice_count or 1 }}</span>
+          </div>
+          
+          <!-- Top Right Details HUD -->
+          <div class="absolute top-2 right-2 z-20 font-mono text-[10px] text-right text-slate-400 pointer-events-none">
+            <div class="text-white font-semibold">{{ patient.patient_name }}</div>
+            <div>CR: {{ patient.cr_number }}</div>
+          </div>
+
+          <!-- Bottom Left HUD (W/L, Zoom, Spacing, Stream) -->
+          <div class="absolute bottom-2 left-2 z-20 font-mono text-[10px] text-cyan-300 pointer-events-none space-y-0.5 bg-black/60 p-1.5 rounded-lg border border-slate-800">
+            <div class="flex items-center gap-1.5 text-[10px] pb-0.5 border-b border-slate-800/80">
+              <span id="streamHudDot" class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              <span id="streamHudLabel" class="font-bold text-white font-mono">Stream: Local Host</span>
+            </div>
+            <div>WW: <span id="hudWW" class="text-white font-bold">--</span> | WC: <span id="hudWC" class="text-white font-bold">--</span> (<span id="hudPreset">Bone</span>)</div>
+            <div class="text-emerald-400">Voxel: <span id="hudSpacing" class="text-white font-bold">--</span> mm</div>
+          </div>
+
+          <!-- Bottom Right HUD (Scroll Wheel) -->
+          <div class="absolute bottom-2 right-2 z-20 font-mono text-[10px] text-slate-400 text-right pointer-events-none">
+            <div>Left Click: Active Tool</div>
+            <div class="text-cyan-400 font-semibold">Scroll: Navigate Slices</div>
+          </div>
+
+          <!-- Cornerstone3D Volume Viewport: Axial -->
+          <div id="viewportAxial" class="w-full h-full cursor-crosshair"></div>
+        </div>
+
+        <!-- PANE 2: Coronal (Frontal, Y-axis) -->
+        <div id="paneCoronal" class="relative bg-black rounded-xl overflow-hidden border border-emerald-500/40 flex flex-col group select-none min-h-0">
+          <!-- Pane Badge & Coordinates -->
+          <div class="absolute top-2 left-2 z-20 font-mono text-[11px] flex items-center gap-2 pointer-events-none">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase tracking-wider">Coronal (Y)</span>
+            <span id="badgeCoronalY" class="text-slate-200 bg-black/70 px-1.5 py-0.5 rounded border border-slate-700/60 font-mono">Coronal MPR</span>
+          </div>
+
+          <!-- Coronal Help Hint -->
+          <div class="absolute bottom-2 right-2 z-20 font-mono text-[10px] text-slate-400 text-right pointer-events-none">
+            <div>Left Click: Crosshairs</div>
+            <div class="text-emerald-400">Scroll: Move Y-Plane</div>
+          </div>
+
+          <!-- Cornerstone3D Volume Viewport: Coronal -->
+          <div id="viewportCoronal" class="w-full h-full cursor-crosshair"></div>
+        </div>
+
+        <!-- PANE 3: Sagittal (Lateral, X-axis) -->
+        <div id="paneSagittal" class="relative bg-black rounded-xl overflow-hidden border border-sky-500/40 flex flex-col group select-none min-h-0">
+          <!-- Pane Badge & Coordinates -->
+          <div class="absolute top-2 left-2 z-20 font-mono text-[11px] flex items-center gap-2 pointer-events-none">
+            <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 font-bold uppercase tracking-wider">Sagittal (X)</span>
+            <span id="badgeSagittalX" class="text-slate-200 bg-black/70 px-1.5 py-0.5 rounded border border-slate-700/60 font-mono">Sagittal MPR</span>
+          </div>
+
+          <!-- Sagittal Help Hint -->
+          <div class="absolute bottom-2 right-2 z-20 font-mono text-[10px] text-slate-400 text-right pointer-events-none">
+            <div>Left Click: Crosshairs</div>
+            <div class="text-sky-400">Scroll: Move X-Plane</div>
+          </div>
+
+          <!-- Cornerstone3D Volume Viewport: Sagittal -->
+          <div id="viewportSagittal" class="w-full h-full cursor-crosshair"></div>
+        </div>
+
+        <!-- PANE 4: 3D Volume Viewport (Hidden by default, shown via Toggle 3D) -->
+        <div id="pane3D" class="hidden relative bg-slate-950 rounded-xl overflow-hidden border border-indigo-500/40 flex flex-col group select-none min-h-0">
+          <div class="absolute top-2 left-2 z-20 font-mono text-[11px] flex items-center gap-2 pointer-events-none">
+            <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-bold uppercase tracking-wider">3D Volume</span>
+            <span id="badge3DStatus" class="text-cyan-400 bg-black/70 px-1.5 py-0.5 rounded border border-slate-700/60 font-mono">Orthopedic Volume</span>
+          </div>
+
+          <div class="absolute bottom-2 right-2 z-20 font-mono text-[10px] text-slate-400 text-right pointer-events-none">
+            <div>Left Drag: Rotate</div>
+            <div>Right Drag: Pan</div>
+            <div class="text-indigo-400">Scroll: Zoom 3D</div>
+          </div>
+
+          <div id="container3D" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module">
+  const scanId = {{ scan.id }};
+  const totalSlices = {{ slice_count or 1 }};
+  const sliceUrlTemplate = "{{ url_for('stream_dicom_slice', scan_id=scan.id, slice_idx=0) }}";
+  const driveFileId = "{{ (drive_file_id or '')|escape }}";
+  const isDriveConfigured = {{ 'true' if is_drive_configured else 'false' }};
+  const hasCloudId = {{ 'true' if has_cloud_id else 'false' }};
+  let currentStreamMode = 'local'; // 'local' | 'cloud'
+
+  let csCore = null;
+  let csTools = null;
+  let renderingEngine = null;
+  let toolGroup = null;
+  let activeVolume = null;
+  let currentActiveTool = 'Crosshairs';
+  let is3DActive = false;
+  let isInverted = false;
+  let sortedImageIds = [];
+  let cachedBlobUrls = [];
+
+  // Three.js 3D volume components
+  let threeScene = null;
+  let threeCamera = null;
+  let threeRenderer = null;
+  let threeControls = null;
+  let threePointCloud = null;
+  let threeBoundingBox = null;
+
+  // -------------------------------------------------------------------------
+  // 1. STRICT SPATIAL SORTING FUNCTION (CRITICAL FIX FOR CLINICAL MPR)
+  // -------------------------------------------------------------------------
+  /**
+   * Sorts DICOM image IDs based on ImagePositionPatient (0020,0032) projected
+   * onto the scan plane normal vector n = rowCosines x columnCosines.
+   *
+   * This guarantees strict spatial ordering along the true slice progression axis,
+   * completely eliminating banding, static noise, and scrambling in orthogonal MPR planes.
+   */
+  function sortImageIdsBySpatialPosition(imageIds, cs) {
+    console.log(`[Cornerstone3D MPR] Performing strict spatial sorting on ${imageIds.length} slices...`);
+    const records = [];
+
+    for (let i = 0; i < imageIds.length; i++) {
+      const id = imageIds[i];
+      const imagePlane = cs.metaData.get('imagePlaneModule', id);
+      let dist = i;
+      let zCoord = i;
+      let normal = [0, 0, 1];
+      let pos = [0, 0, i];
+
+      if (imagePlane) {
+        if (imagePlane.rowCosines && imagePlane.columnCosines) {
+          const r = imagePlane.rowCosines;
+          const c = imagePlane.columnCosines;
+          // Calculate scan plane normal: n = r x c
+          normal = [
+            r[1] * c[2] - r[2] * c[1],
+            r[2] * c[0] - r[0] * c[2],
+            r[0] * c[1] - r[1] * c[0]
+          ];
+          // Normalize vector
+          const len = Math.hypot(normal[0], normal[1], normal[2]) || 1;
+          normal[0] /= len;
+          normal[1] /= len;
+          normal[2] /= len;
+        }
+
+        if (imagePlane.imagePositionPatient && imagePlane.imagePositionPatient.length >= 3) {
+          pos = imagePlane.imagePositionPatient;
+          zCoord = pos[2];
+          // Gold standard DICOM projection: distance = P . n
+          dist = pos[0] * normal[0] + pos[1] * normal[1] + pos[2] * normal[2];
+        } else if (imagePlane.sliceLocation !== undefined && !isNaN(imagePlane.sliceLocation)) {
+          dist = parseFloat(imagePlane.sliceLocation);
+          zCoord = dist;
+        }
+      }
+
+      records.push({
+        id,
+        index: i,
+        dist,
+        zCoord,
+        pos,
+        normal
+      });
+    }
+
+    // Sort strictly in ascending order along the scan projection normal
+    records.sort((a, b) => a.dist - b.dist);
+
+    console.log(`[Cornerstone3D MPR] Spatial sorting completed. First slice dist: ${records[0].dist.toFixed(2)}, Last slice dist: ${records[records.length - 1].dist.toFixed(2)}`);
+    return records.map(r => r.id);
+  }
+
+  // -------------------------------------------------------------------------
+  // 1.5 HYBRID CLOUD / LOCAL STREAMING FETCH ENGINE
+  // -------------------------------------------------------------------------
+  async function constructImageIds(streamMode) {
+    const rawImageIds = [];
+    if (streamMode === 'cloud') {
+      const loadingSubtitle = document.getElementById('loadingSubtitle');
+      if (loadingSubtitle) loadingSubtitle.textContent = 'Remote Fast-Path: Requesting Google Drive token...';
+
+      let token = null;
+      try {
+        const tokenRes = await fetch('/api/drive/token');
+        const tokenData = await tokenRes.json();
+        if (tokenData && tokenData.access_token) {
+          token = tokenData.access_token;
+        }
+      } catch (e) {
+        console.warn("[Hybrid Streaming] Could not fetch Google Drive token:", e);
+      }
+
+      if (!token) {
+        alert("Google Drive API is not yet configured or token is unavailable on this server. Falling back to Local Host stream.");
+        currentStreamMode = 'local';
+        updateStreamToggleUI('local');
+        return constructImageIds('local');
+      }
+
+      if (!hasCloudId || !driveFileId || driveFileId.startsWith('local_')) {
+        alert(`This scan has not been synced to a remote Google Cloud file ID (ID: ${driveFileId || 'None'}). Falling back to Local Host stream.`);
+        currentStreamMode = 'local';
+        updateStreamToggleUI('local');
+        return constructImageIds('local');
+      }
+
+      if (loadingSubtitle) loadingSubtitle.textContent = `Streaming DICOM byte stream directly from Google Drive API (${driveFileId})...`;
+
+      try {
+        // Direct remote fast-path: pull DICOM byte stream directly from Google Drive API
+        const driveUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(driveFileId)}?alt=media`;
+        const resp = await fetch(driveUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!resp.ok) {
+          throw new Error(`Google Drive API HTTP ${resp.status}: ${resp.statusText}`);
+        }
+
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        cachedBlobUrls.push(blobUrl);
+        rawImageIds.push(`wadouri:${blobUrl}`);
+
+        // If multi-slice series has additional slices, load remaining
+        for (let i = 1; i < totalSlices; i++) {
+          const sUrl = sliceUrlTemplate.replace('/0', '/' + i);
+          rawImageIds.push(`wadouri:${window.location.origin}${sUrl}`);
+        }
+        console.log(`[Hybrid Streaming] Successfully loaded ${rawImageIds.length} slices using direct Google Cloud stream.`);
+      } catch (err) {
+        console.error("[Hybrid Streaming] Remote fast-path fetch failed:", err);
+        alert(`Remote Google Cloud fetch failed: ${err.message}. Falling back to Local Host stream.`);
+        currentStreamMode = 'local';
+        updateStreamToggleUI('local');
+        return constructImageIds('local');
+      }
+    } else {
+      // Local Host pipeline
+      for (let i = 0; i < totalSlices; i++) {
+        const sUrl = sliceUrlTemplate.replace('/0', '/' + i);
+        rawImageIds.push(`wadouri:${window.location.origin}${sUrl}`);
+      }
+    }
+    return rawImageIds;
+  }
+
+  async function switchStreamMode(mode) {
+    if (mode === currentStreamMode) return;
+    currentStreamMode = mode;
+    updateStreamToggleUI(mode);
+
+    const loadingEl = document.getElementById('viewerLoading');
+    if (loadingEl) {
+      loadingEl.style.display = 'flex';
+      const loadingTitle = document.getElementById('loadingTitle');
+      if (loadingTitle) {
+        loadingTitle.textContent = mode === 'cloud' 
+          ? 'Switching to Google Cloud Direct Fast-Path...' 
+          : 'Switching to Local Host Stream...';
+      }
+    }
+
+    try {
+      if (renderingEngine) {
+        renderingEngine.destroy();
+        renderingEngine = null;
+      }
+      if (activeVolume && csCore && csCore.cache) {
+        csCore.cache.purgeCache();
+        activeVolume = null;
+      }
+      cachedBlobUrls.forEach(url => URL.revokeObjectURL(url));
+      cachedBlobUrls = [];
+
+      await initCornerstoneMPR();
+    } catch (err) {
+      console.error("[Hybrid Streaming] Error switching stream mode:", err);
+      alert("Error switching stream mode: " + err.message);
+      if (mode === 'cloud') {
+        await switchStreamMode('local');
+      }
+    }
+  }
+
+  function updateStreamToggleUI(mode) {
+    const btnLocal = document.getElementById('btnStreamLocal');
+    const btnCloud = document.getElementById('btnStreamCloud');
+    const hudLabel = document.getElementById('streamHudLabel');
+    const hudDot = document.getElementById('streamHudDot');
+
+    if (mode === 'cloud') {
+      if (btnLocal) btnLocal.className = "px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200";
+      if (btnCloud) btnCloud.className = "px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm";
+      if (hudLabel) hudLabel.textContent = "Stream: Google Cloud (Direct)";
+      if (hudDot) hudDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+    } else {
+      if (btnLocal) btnLocal.className = "px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/40";
+      if (btnCloud) btnCloud.className = "px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all text-slate-400 hover:text-slate-200";
+      if (hudLabel) hudLabel.textContent = "Stream: Local Host";
+      if (hudDot) hudDot.className = "w-1.5 h-1.5 rounded-full bg-cyan-400";
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 2. CORNERSTONE3D INITIALIZATION & VIEWPORT CONFIGURATION
+  // -------------------------------------------------------------------------
+  async function initCornerstoneMPR() {
+    const loadingEl = document.getElementById('viewerLoading');
+    try {
+      if (loadingEl) loadingEl.style.display = 'flex';
+
+      // 1. Dynamic Import of Cornerstone3D Core, Tools, and DICOM Loader
+      csCore = await import('https://esm.sh/@cornerstonejs/core@5.11.0');
+      csTools = await import('https://esm.sh/@cornerstonejs/tools@5.11.0');
+      const registerWadoUri = (await import('https://esm.sh/@cornerstonejs/dicom-image-loader@5.11.0/es2022/dist/esm/imageLoader/wadouri/register.mjs')).default;
+
+      // 2. Initialize Core and Tools
+      await csCore.init();
+      await csTools.init();
+
+      // 3. Register Blob Web Worker for DICOM image decompression (bypasses cross-origin restrictions)
+      const workerScript = `import "https://esm.sh/@cornerstonejs/dicom-image-loader@5.11.0/es2022/dist/esm/decodeImageFrameWorker.js";`;
+      const blob = new Blob([workerScript], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      csCore.getWebWorkerManager().registerWorker('dicomImageLoader', () => new Worker(blobUrl, { type: 'module' }), {
+        maxWorkerInstances: Math.min(navigator.hardwareConcurrency || 2, 4),
+        overwrite: true
+      });
+      registerWadoUri();
+
+      // 4. Construct raw image IDs according to active Hybrid Stream Mode
+      const rawImageIds = await constructImageIds(currentStreamMode);
+
+      // Preload image metadata across series so imagePlaneModule is available for sorting
+      // Load in batches to maximize responsiveness
+      const batchSize = 16;
+      for (let b = 0; b < rawImageIds.length; b += batchSize) {
+        const batch = rawImageIds.slice(b, b + batchSize);
+        await Promise.all(batch.map(id => csCore.imageLoader.loadAndCacheImage(id)));
+      }
+
+      // 5. REQUIREMENT 2: Apply Strict Spatial Sorting Function
+      sortedImageIds = sortImageIdsBySpatialPosition(rawImageIds, csCore);
+
+      // Extract voxel spacing for HUD
+      const refPlane = csCore.metaData.get('imagePlaneModule', sortedImageIds[0]);
+      let vx = 1.0, vy = 1.0, vz = 1.0;
+      if (refPlane) {
+        if (refPlane.pixelSpacing) {
+          vy = refPlane.pixelSpacing[0] || 1.0;
+          vx = refPlane.pixelSpacing[1] || 1.0;
+        }
+        if (sortedImageIds.length > 1) {
+          const plane2 = csCore.metaData.get('imagePlaneModule', sortedImageIds[1]);
+          if (plane2 && refPlane.imagePositionPatient && plane2.imagePositionPatient) {
+            const p1 = refPlane.imagePositionPatient;
+            const p2 = plane2.imagePositionPatient;
+            vz = Math.hypot(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]) || 1.0;
+          }
+        }
+      }
+      const hudSpacing = document.getElementById('hudSpacing');
+      if (hudSpacing) {
+        hudSpacing.textContent = `${vx.toFixed(2)} × ${vy.toFixed(2)} × ${vz.toFixed(2)}`;
+      }
+
+      // 6. REQUIREMENT 3: Create 3D Streaming Volume & VolumeViewports
+      const volumeId = `cornerstoneStreamingImageVolume:vol_scan_${scanId}_${Date.now()}`;
+      activeVolume = await csCore.volumeLoader.createAndCacheVolume(volumeId, {
+        imageIds: sortedImageIds
+      });
+
+      const renderingEngineId = 'orthoregEngine';
+      renderingEngine = new csCore.RenderingEngine(renderingEngineId);
+
+      const elementAxial = document.getElementById('viewportAxial');
+      const elementCoronal = document.getElementById('viewportCoronal');
+      const elementSagittal = document.getElementById('viewportSagittal');
+
+      const viewportInputs = [
+        {
+          viewportId: 'AXIAL',
+          type: csCore.Enums.ViewportType.ORTHOGRAPHIC,
+          element: elementAxial,
+          defaultOptions: {
+            orientation: csCore.Enums.OrientationAxis.AXIAL,
+          }
+        },
+        {
+          viewportId: 'CORONAL',
+          type: csCore.Enums.ViewportType.ORTHOGRAPHIC,
+          element: elementCoronal,
+          defaultOptions: {
+            orientation: csCore.Enums.OrientationAxis.CORONAL,
+          }
+        },
+        {
+          viewportId: 'SAGITTAL',
+          type: csCore.Enums.ViewportType.ORTHOGRAPHIC,
+          element: elementSagittal,
+          defaultOptions: {
+            orientation: csCore.Enums.OrientationAxis.SAGITTAL,
+          }
+        }
+      ];
+
+      renderingEngine.setViewports(viewportInputs);
+
+      // Map volume to viewports
+      await csCore.setVolumesForViewports(
+        renderingEngine,
+        [{ volumeId }],
+        ['AXIAL', 'CORONAL', 'SAGITTAL']
+      );
+
+      activeVolume.load();
+
+      // 7. REQUIREMENT 4: Initialize and Link Synchronized CrosshairsTool
+      const {
+        CrosshairsTool,
+        WindowLevelTool,
+        ZoomTool,
+        PanTool,
+        StackScrollTool,
+        ToolGroupManager,
+        Enums: csToolsEnums,
+        addTool
+      } = csTools;
+
+      addTool(CrosshairsTool);
+      addTool(WindowLevelTool);
+      addTool(ZoomTool);
+      addTool(PanTool);
+      addTool(StackScrollTool);
+
+      const toolGroupId = 'mprToolGroup';
+      toolGroup = ToolGroupManager.createToolGroup(toolGroupId);
+
+      // Link all three MPR viewports together in the tool group
+      toolGroup.addViewport('AXIAL', renderingEngineId);
+      toolGroup.addViewport('CORONAL', renderingEngineId);
+      toolGroup.addViewport('SAGITTAL', renderingEngineId);
+
+      // Register Crosshairs with clinical reference line colors
+      toolGroup.addTool(CrosshairsTool.toolName, {
+        getReferenceLineColor: (viewportId) => {
+          if (viewportId === 'AXIAL') return 'rgb(245, 158, 11)';     // Amber / Yellow
+          if (viewportId === 'CORONAL') return 'rgb(16, 185, 129)';   // Green
+          if (viewportId === 'SAGITTAL') return 'rgb(56, 189, 248)';  // Sky Blue
+          return 'rgb(255, 255, 255)';
+        },
+        getReferenceLineControllable: () => true,
+        getReferenceLineDraggableRotatable: () => true,
+        getReferenceLineSlabThicknessControlsOn: () => false,
+      });
+
+      toolGroup.addTool(WindowLevelTool.toolName);
+      toolGroup.addTool(ZoomTool.toolName);
+      toolGroup.addTool(PanTool.toolName);
+      toolGroup.addTool(StackScrollTool.toolName);
+
+      // Activate primary CrosshairsTool across viewports
+      toolGroup.setToolActive(CrosshairsTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }]
+      });
+      // Scroll wheel navigates slices
+      toolGroup.setToolActive(StackScrollTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Wheel }]
+      });
+      // Auxiliary (middle click) pans
+      toolGroup.setToolActive(PanTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Auxiliary }]
+      });
+      // Secondary (right click) zooms
+      toolGroup.setToolActive(ZoomTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Secondary }]
+      });
+
+      // 8. Render All 3 Viewports
+      renderingEngine.renderViewports(['AXIAL', 'CORONAL', 'SAGITTAL']);
+
+      // Apply initial bone window level
+      applyWLPreset(2000, 400, 'Bone');
+
+      // 9. Camera & Slice HUD Synchronization Listeners
+      elementAxial.addEventListener(csCore.Enums.Events.CAMERA_MODIFIED, (e) => {
+        try {
+          const vp = renderingEngine.getViewport('AXIAL');
+          if (vp && vp.getCurrentImageIdIndex) {
+            const curIdx = vp.getCurrentImageIdIndex();
+            const sliceNumberElem = document.getElementById('sliceNumber');
+            if (sliceNumberElem) sliceNumberElem.textContent = `${curIdx + 1} / ${totalSlices}`;
+            const sliceSlider = document.getElementById('sliceSlider');
+            if (sliceSlider && parseInt(sliceSlider.value) !== curIdx) sliceSlider.value = curIdx;
+            const badgeAxialZ = document.getElementById('badgeAxialZ');
+            if (badgeAxialZ) badgeAxialZ.textContent = `Z: ${curIdx + 1} / ${totalSlices}`;
+          }
+        } catch (err) {}
+      });
+
+      // VOI Window/Level modification HUD listener
+      elementAxial.addEventListener(csCore.Enums.Events.VOI_MODIFIED, (e) => {
+        try {
+          const range = e.detail?.range;
+          if (range) {
+            const ww = Math.round(range.upper - range.lower);
+            const wc = Math.round((range.upper + range.lower) / 2);
+            const hudWW = document.getElementById('hudWW');
+            const hudWC = document.getElementById('hudWC');
+            if (hudWW) hudWW.textContent = ww;
+            if (hudWC) hudWC.textContent = wc;
+          }
+        } catch (err) {}
+      });
+
+      window.addEventListener('resize', () => {
+        if (renderingEngine) renderingEngine.resize(true);
+      });
+
+      if (loadingEl) loadingEl.style.display = 'none';
+      console.log("[Cornerstone3D MPR] Successfully initialized VolumeViewports and CrosshairsTool.");
+
+    } catch (err) {
+      console.error("[Cornerstone3D MPR Error]", err);
+      if (loadingEl) {
+        loadingEl.style.display = 'flex';
+        loadingEl.innerHTML = `
+          <div class="text-rose-400 font-bold mb-2"><i class="fa-solid fa-circle-exclamation text-3xl"></i></div>
+          <p class="text-sm font-semibold text-white">Cornerstone3D MPR Error</p>
+          <p class="text-xs text-rose-300 font-mono mt-1 max-w-md text-center px-4">
+            ${err.message || 'Failed to initialize clinical MPR volume'}
+          </p>
+          <div class="mt-4 flex items-center space-x-2">
+            <button onclick="window.location.reload()" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold transition">
+              <i class="fa-solid fa-rotate-right mr-1"></i> Reload
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. TOOLBAR CONTROLS & INTERACTION FUNCTIONS
+  // -------------------------------------------------------------------------
+  function setActiveTool(toolName) {
+    currentActiveTool = toolName;
+    if (!toolGroup || !csTools) return;
+
+    const { CrosshairsTool, WindowLevelTool, ZoomTool, PanTool, Enums: csToolsEnums } = csTools;
+
+    // Passive all tools on primary mouse button
+    toolGroup.setToolPassive(CrosshairsTool.toolName);
+    toolGroup.setToolPassive(WindowLevelTool.toolName);
+    toolGroup.setToolPassive(ZoomTool.toolName);
+    toolGroup.setToolPassive(PanTool.toolName);
+
+    if (toolName === 'Crosshairs') {
+      toolGroup.setToolActive(CrosshairsTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }]
+      });
+    } else if (toolName === 'Wwwc') {
+      toolGroup.setToolActive(WindowLevelTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }]
+      });
+    } else if (toolName === 'Zoom') {
+      toolGroup.setToolActive(ZoomTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }]
+      });
+    } else if (toolName === 'Pan') {
+      toolGroup.setToolActive(PanTool.toolName, {
+        bindings: [{ mouseButton: csToolsEnums.MouseBindings.Primary }]
+      });
+    }
+
+    document.querySelectorAll('.viewer-tool-btn').forEach(btn => btn.classList.remove('active'));
+    const btnMap = {
+      'Crosshairs': 'toolCrosshairs',
+      'Wwwc': 'toolWL',
+      'Zoom': 'toolZoom',
+      'Pan': 'toolPan'
+    };
+    if (btnMap[toolName]) {
+      const activeBtn = document.getElementById(btnMap[toolName]);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+  }
+
+  function applyWLPreset(ww, wc, name) {
+    if (!renderingEngine) return;
+    try {
+      const lower = wc - ww / 2;
+      const upper = wc + ww / 2;
+      ['AXIAL', 'CORONAL', 'SAGITTAL'].forEach(id => {
+        const vp = renderingEngine.getViewport(id);
+        if (vp) {
+          vp.setProperties({
+            voiRange: { lower, upper }
+          });
+          vp.render();
+        }
+      });
+      const presetHud = document.getElementById('hudPreset');
+      if (presetHud) presetHud.textContent = name;
+      const hudWW = document.getElementById('hudWW');
+      const hudWC = document.getElementById('hudWC');
+      if (hudWW) hudWW.textContent = Math.round(ww);
+      if (hudWC) hudWC.textContent = Math.round(wc);
+    } catch (e) {
+      console.warn("[PACS Viewer] Error applying W/L preset:", e);
+    }
+  }
+
+  function toggleInvert() {
+    if (!renderingEngine) return;
+    try {
+      isInverted = !isInverted;
+      ['AXIAL', 'CORONAL', 'SAGITTAL'].forEach(id => {
+        const vp = renderingEngine.getViewport(id);
+        if (vp) {
+          vp.setProperties({ invert: isInverted });
+          vp.render();
+        }
+      });
+    } catch (e) {
+      console.warn("[PACS Viewer] Error toggling inversion:", e);
+    }
+  }
+
+  function resetViewport() {
+    if (!renderingEngine) return;
+    try {
+      ['AXIAL', 'CORONAL', 'SAGITTAL'].forEach(id => {
+        const vp = renderingEngine.getViewport(id);
+        if (vp) {
+          vp.resetCamera();
+          vp.render();
+        }
+      });
+      applyWLPreset(2000, 400, 'Bone');
+    } catch (e) {
+      console.warn("[PACS Viewer] Error resetting viewport:", e);
+    }
+  }
+
+  function changeSlice(idx) {
+    if (!renderingEngine) return;
+    try {
+      const vp = renderingEngine.getViewport('AXIAL');
+      if (vp && vp.scroll) {
+        const target = Math.max(0, Math.min(totalSlices - 1, parseInt(idx)));
+        const cur = vp.getCurrentImageIdIndex ? vp.getCurrentImageIdIndex() : 0;
+        const delta = target - cur;
+        if (delta !== 0) {
+          vp.scroll(delta);
+        }
+      }
+    } catch (e) {}
+  }
+
+  function toggleFullscreen() {
+    const container = document.getElementById('dicomViewportContainer');
+    if (!container) return;
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 4. 3D VOLUME VIEWPORT (THREE.JS INTEGRATION)
+  // -------------------------------------------------------------------------
+  function init3DVolumeRenderer() {
+    const container = document.getElementById('container3D');
+    if (!container || threeRenderer) return;
+
+    const width = container.clientWidth || 300;
+    const height = container.clientHeight || 300;
+
+    threeScene = new THREE.Scene();
+    threeScene.background = new THREE.Color(0x020617);
+
+    threeCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
+    threeCamera.position.set(160, 140, 180);
+
+    threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    threeRenderer.setSize(width, height);
+    threeRenderer.setPixelRatio(window.devicePixelRatio || 1);
+    container.innerHTML = '';
+    container.appendChild(threeRenderer.domElement);
+
+    threeControls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
+    threeControls.enableDamping = true;
+    threeControls.dampingFactor = 0.05;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+    threeScene.add(ambientLight);
+    const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 0.6);
+    dirLight1.position.set(100, 200, 100);
+    threeScene.add(dirLight1);
+
+    const boxGeo = new THREE.BoxGeometry(100, 100, 100);
+    const wireGeo = new THREE.WireframeGeometry(boxGeo);
+    threeBoundingBox = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 1 }));
+    threeScene.add(threeBoundingBox);
+
+    function animate3D() {
+      if (!is3DActive) return;
+      requestAnimationFrame(animate3D);
+      threeControls.update();
+      threeRenderer.render(threeScene, threeCamera);
+    }
+    requestAnimationFrame(animate3D);
+  }
+
+  function toggle3DVolume() {
+    const pane3D = document.getElementById('pane3D');
+    const mprGrid = document.getElementById('mprGrid');
+    const btn3D = document.getElementById('btnToggle3D');
+
+    is3DActive = !is3DActive;
+
+    if (is3DActive) {
+      pane3D.classList.remove('hidden');
+      mprGrid.classList.remove('md:grid-cols-3');
+      mprGrid.classList.add('md:grid-cols-2', 'md:grid-rows-2');
+
+      if (btn3D) {
+        btn3D.classList.add('bg-indigo-600', 'text-white', 'ring-2', 'ring-indigo-400');
+        btn3D.classList.remove('bg-indigo-950/80', 'text-indigo-300');
+      }
+
+      setTimeout(() => {
+        if (!threeRenderer) {
+          init3DVolumeRenderer();
+        } else {
+          const container = document.getElementById('container3D');
+          if (container && threeRenderer && threeCamera) {
+            const w = container.clientWidth || 300;
+            const h = container.clientHeight || 300;
+            threeCamera.aspect = w / h;
+            threeCamera.updateProjectionMatrix();
+            threeRenderer.setSize(w, h);
+          }
+        }
+        if (renderingEngine) renderingEngine.resize(true);
+      }, 50);
+
+    } else {
+      pane3D.classList.add('hidden');
+      mprGrid.classList.add('md:grid-cols-3');
+      mprGrid.classList.remove('md:grid-cols-2', 'md:grid-rows-2');
+
+      if (btn3D) {
+        btn3D.classList.remove('bg-indigo-600', 'text-white', 'ring-2', 'ring-indigo-400');
+        btn3D.classList.add('bg-indigo-950/80', 'text-indigo-300');
+      }
+
+      setTimeout(() => {
+        if (renderingEngine) renderingEngine.resize(true);
+      }, 50);
+    }
+  }
+
+  // Export functions to window for UI onclick handlers
+  window.changeSlice = changeSlice;
+  window.setActiveTool = setActiveTool;
+  window.applyWLPreset = applyWLPreset;
+  window.toggleInvert = toggleInvert;
+  window.resetViewport = resetViewport;
+  window.toggleFullscreen = toggleFullscreen;
+  window.toggle3DVolume = toggle3DVolume;
+  window.switchStreamMode = switchStreamMode;
+
+  document.addEventListener('DOMContentLoaded', initCornerstoneMPR);
+</script>
+{% endblock %}

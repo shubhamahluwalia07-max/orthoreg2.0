@@ -1,0 +1,36 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Sensitive Credentials & Auth Tokens
+credentials.json
+token.json
+.env
+*.env
+
+# SQLite Database & Instance folder
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads & temporary storage
+uploads/
+scratch/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
