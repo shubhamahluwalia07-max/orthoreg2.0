@@ -3,7 +3,7 @@
 {% block title %}Patient Registry - Orthopedic Radiology Registry{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="w-full space-y-6">
 
   <!-- Top Metric Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -167,7 +167,7 @@
           <i class="fa-solid fa-file-csv text-emerald-400 mr-1.5"></i> Export CSV
         </a>
 
-        {% if current_user.is_admin_or_pi %}
+        {% if current_user.is_editor %}
         <button onclick="openModal('registerPatientModal')" class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-xs font-semibold text-purple-200 transition-all flex items-center shadow-lg shadow-purple-500/10">
           <i class="fa-solid fa-user-plus mr-1.5 text-purple-400"></i> Register Patient (Pre-Scan)
         </button>
@@ -247,6 +247,7 @@
                 {% endif %}
               </a>
             </th>
+            <th class="py-3.5 px-4">Clinical Profile</th>
             <th class="py-3.5 px-4">Scans & PACS Viewer</th>
             <th class="py-3.5 px-4">Allocated Trials</th>
             <th class="py-3.5 px-4">Custom Columns</th>
@@ -266,14 +267,26 @@
 
             <!-- Patient Name -->
             <td class="py-3 px-4 whitespace-nowrap">
-              {% if p.scans %}
-                <button type="button" onclick="openRadiologyModal('{{ p.cr_number|escape }}')" class="font-semibold text-white hover:text-cyan-400 transition-colors flex items-center gap-1.5 text-left" title="Click to view Radiology Data">
-                  <span>{{ p.patient_name or 'Unknown Patient' }}</span>
-                  <i class="fa-solid fa-layer-group text-[10px] text-slate-500"></i>
+              <div class="flex items-center gap-2">
+                {% if p.scans %}
+                  <button type="button" onclick="openRadiologyModal('{{ p.cr_number|escape }}')" class="font-semibold text-white hover:text-cyan-400 transition-colors flex items-center gap-1.5 text-left" title="Click to view Radiology Data">
+                    <span>{{ p.patient_name or 'Unknown Patient' }}</span>
+                    <i class="fa-solid fa-layer-group text-[10px] text-slate-500"></i>
+                  </button>
+                {% else %}
+                  <span class="font-semibold text-white">{{ p.patient_name or 'Unknown Patient' }}</span>
+                {% endif %}
+
+                {% if current_user.role in ['Admin', 'Editor'] %}
+                <button type="button"
+                        onclick="openClinicalProfileModal('{{ p.cr_number|escape }}', '{{ (p.patient_name or '')|replace('\'', '\\\'')|escape }}', '{{ (p.diagnosis or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', '{{ (p.ao_grade or p.ao_trauma_score or 'NA')|replace('\'', '\\\'')|escape }}', '{{ (p.anatomy or '')|replace('\'', '\\\'')|escape }}', '{{ (p.scanogram or 'No')|replace('\'', '\\\'')|escape }}')"
+                        class="px-2 py-0.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 transition-all inline-flex items-center gap-1 text-[11px] font-semibold shadow-sm"
+                        title="Edit Clinical Profile">
+                  <i class="fa-solid fa-user-pen text-[10px]"></i>
+                  <span>Edit Profile</span>
                 </button>
-              {% else %}
-                <span class="font-semibold text-white">{{ p.patient_name or 'Unknown Patient' }}</span>
-              {% endif %}
+                {% endif %}
+              </div>
             </td>
 
             <!-- Age & Gender -->
@@ -282,6 +295,35 @@
               <span class="font-semibold {% if p.gender == 'M' %}text-blue-400{% elif p.gender == 'F' %}text-rose-400{% else %}text-slate-400{% endif %}">
                 {{ p.gender or 'Other' }}
               </span>
+            </td>
+
+            <!-- Core Orthopedic Profile (Diagnosis, AO Trauma Score / AO Grade, Anatomy, Scanogram) -->
+            <td class="py-3 px-4">
+              <div class="space-y-1">
+                <div class="font-medium text-white text-xs truncate max-w-[220px]" title="{{ p.diagnosis or 'Diagnosis Not Documented' }}">
+                  {{ p.diagnosis or '—' }}
+                </div>
+                <div class="flex flex-wrap items-center gap-1 font-mono text-[10px]">
+                  {% if p.ao_grade or p.ao_trauma_score %}
+                    <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30" title="AO Classification / Grade">
+                      AO: {{ p.ao_grade or p.ao_trauma_score }}
+                    </span>
+                  {% endif %}
+                  {% if p.anatomy %}
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" title="Anatomical Region">
+                      {{ p.anatomy }}
+                    </span>
+                  {% endif %}
+                  {% if p.scanogram and p.scanogram.lower() in ['yes', 'true', '1'] %}
+                    <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" title="Scanogram Available">
+                      <i class="fa-solid fa-check text-[9px] mr-0.5"></i>Scanogram
+                    </span>
+                  {% endif %}
+                  {% if not (p.ao_grade or p.ao_trauma_score) and not p.anatomy and not p.diagnosis and (not p.scanogram or p.scanogram.lower() not in ['yes', 'true', '1']) %}
+                    <span class="text-slate-500 italic text-[11px]">—</span>
+                  {% endif %}
+                </div>
+              </div>
             </td>
 
             <!-- Scans & Modalities: Single Button per Patient -->
@@ -350,11 +392,11 @@
 
             <!-- RBAC Actions -->
             <td class="py-3 px-4 text-right whitespace-nowrap">
-              {% if current_user.is_admin_or_pi %}
+              {% if current_user.is_editor %}
               <div class="flex items-center justify-end space-x-1.5">
                 
                 <!-- Edit Metadata Button -->
-                <button onclick="openEditModal('{{ p.cr_number }}', '{{ p.patient_name|escape }}', '{{ p.age or '' }}', '{{ p.gender or '' }}')"
+                <button onclick="openEditModal('{{ p.cr_number }}', '{{ p.patient_name|escape }}', '{{ p.age or '' }}', '{{ p.gender or '' }}', '{{ (p.diagnosis or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', '{{ (p.ao_trauma_score or '')|replace('\'', '\\\'')|escape }}', '{{ (p.anatomy or '')|replace('\'', '\\\'')|escape }}')"
                   class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 border border-slate-700 transition-colors"
                   title="Edit Patient Metadata">
                   <i class="fa-solid fa-pen-to-square"></i>
@@ -374,12 +416,14 @@
                   <i class="fa-solid fa-plus"></i>
                 </button>
 
-                <!-- Delete Patient (Cascade) -->
+                <!-- Delete Patient (Cascade) - Admin Only -->
+                {% if current_user.is_admin %}
                 <form method="POST" action="{{ url_for('delete_patient', cr_number=p.cr_number) }}" class="inline" onsubmit="return confirm('Delete patient {{ p.cr_number }} and all associated scans?');">
                   <button type="submit" class="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors" title="Delete Patient">
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
                 </form>
+                {% endif %}
 
               </div>
               {% else %}
@@ -390,7 +434,7 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="7" class="py-12 text-center text-slate-400">
+            <td colspan="8" class="py-12 text-center text-slate-400">
               <div class="flex flex-col items-center justify-center space-y-2">
                 <i class="fa-solid fa-folder-open text-3xl text-slate-600"></i>
                 <p class="text-sm font-semibold text-slate-300">No patient records found</p>
@@ -408,10 +452,10 @@
 
 
 <!-- ========================================================= -->
-<!-- MODALS (ADMIN / PI ONLY)                                  -->
+<!-- MODALS (ADMIN / EDITOR ACCESS)                            -->
 <!-- ========================================================= -->
 
-{% if current_user.is_admin_or_pi %}
+{% if current_user.is_editor %}
 
 <!-- 1. Edit Patient Metadata Modal -->
 <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
@@ -446,10 +490,174 @@
             </select>
           </div>
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Diagnosis</label>
+          <input type="text" name="diagnosis" id="edit_diagnosis" class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="e.g. Femoral Neck Fracture">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">AO Trauma Score</label>
+            <input type="text" name="ao_trauma_score" id="edit_ao_score" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" placeholder="e.g. 31-B2.1">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Anatomy / Site</label>
+            <input type="text" name="anatomy" id="edit_anatomy" class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="e.g. Proximal Femur">
+          </div>
+        </div>
       </div>
       <div class="mt-5 flex justify-end space-x-2">
         <button type="button" onclick="closeModal('editModal')" class="px-3 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300">Cancel</button>
         <button type="submit" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-xs font-semibold text-slate-950">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 1.5 Role-Protected Clinical Profile Edit Modal -->
+<div id="clinicalProfileModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-cyan-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+      <div class="flex items-center space-x-2.5">
+        <span class="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-base">
+          <i class="fa-solid fa-user-pen"></i>
+        </span>
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Clinical Profile</h3>
+          <p id="clinical_patient_display" class="text-[11px] text-cyan-400 font-mono">Patient Clinical Metadata</p>
+        </div>
+      </div>
+      <button onclick="closeModal('clinicalProfileModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="clinicalProfileForm" method="POST" action="{{ url_for('edit_patient') }}" class="space-y-4">
+      <input type="hidden" name="cr_number" id="clinical_cr">
+
+      <!-- Patient Name: Text input -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">
+          Patient Name <span class="text-cyan-400 font-mono text-[10px]">*</span>
+        </label>
+        <input type="text" name="patient_name" id="clinical_patient_name" required placeholder="e.g. John Doe"
+               class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+      </div>
+
+      <!-- Diagnosis: Text input -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">
+          Diagnosis <span class="text-cyan-400 font-mono text-[10px]">*</span>
+        </label>
+        <input type="text" name="diagnosis" id="clinical_diagnosis" required placeholder="e.g. Femoral Neck Fracture, Subtrochanteric fracture"
+               class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+      </div>
+
+      <!-- AO Grade: Dropdown with detailed classifications, explicitly including NA -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">
+          AO Grade / Classification
+        </label>
+        <select name="ao_grade" id="clinical_ao_grade" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+          <option value="NA">NA (Not Applicable)</option>
+          <optgroup label="Femur - Proximal (31)">
+            <option value="31-A1">31-A1: Trochanteric simple</option>
+            <option value="31-A2">31-A2: Trochanteric multifragmentary</option>
+            <option value="31-A3">31-A3: Intertrochanteric reverse oblique</option>
+            <option value="31-B1">31-B1: Neck subcapital</option>
+            <option value="31-B2">31-B2: Neck transcervical</option>
+            <option value="31-B3">31-B3: Neck basicervical</option>
+            <option value="31-C1">31-C1: Head split</option>
+            <option value="31-C2">31-C2: Head depression</option>
+          </optgroup>
+          <optgroup label="Femur - Shaft & Distal (32 / 33)">
+            <option value="32-A">32-A: Diaphyseal simple</option>
+            <option value="32-B">32-B: Diaphyseal wedge</option>
+            <option value="32-C">32-C: Diaphyseal complex</option>
+            <option value="33-A">33-A: Distal extra-articular</option>
+            <option value="33-B">33-B: Distal partial articular</option>
+            <option value="33-C">33-C: Distal complete articular</option>
+          </optgroup>
+          <optgroup label="Tibia / Fibula (41 / 42 / 43 / 44)">
+            <option value="41-A">41-A: Proximal tibia extra-articular</option>
+            <option value="41-B">41-B: Proximal tibia partial articular</option>
+            <option value="41-C">41-C: Proximal tibia complete articular</option>
+            <option value="42-A">42-A: Diaphyseal simple</option>
+            <option value="42-B">42-B: Diaphyseal wedge</option>
+            <option value="42-C">42-C: Diaphyseal complex</option>
+            <option value="43-A">43-A: Distal tibia pilon extra-articular</option>
+            <option value="43-C">43-C: Distal tibia pilon complete articular</option>
+            <option value="44-A">44-A: Malleolar infrasyndesmotic</option>
+            <option value="44-B">44-B: Malleolar transsyndesmotic</option>
+            <option value="44-C">44-C: Malleolar suprasyndesmotic</option>
+          </optgroup>
+          <optgroup label="Humerus / Forearm (11-13 / 21-23)">
+            <option value="11-A">11-A: Proximal humerus extra-articular unifocal</option>
+            <option value="11-B">11-B: Proximal humerus extra-articular bifocal</option>
+            <option value="11-C">11-C: Proximal humerus articular</option>
+            <option value="12-A">12-A: Humeral shaft simple</option>
+            <option value="13-A">13-A: Distal humerus extra-articular</option>
+            <option value="13-C">13-C: Distal humerus complete articular</option>
+            <option value="22-A">22-A: Forearm shaft</option>
+            <option value="23-A">23-A: Distal radius extra-articular</option>
+            <option value="23-C">23-C: Distal radius complete articular</option>
+          </optgroup>
+          <optgroup label="Pelvis & Acetabulum (61 / 62)">
+            <option value="61-A">61-A: Pelvic ring intact posterior</option>
+            <option value="61-B">61-B: Pelvic ring rotationally unstable</option>
+            <option value="61-C">61-C: Pelvic ring completely unstable</option>
+            <option value="62-A">62-A: Acetabulum one column/wall</option>
+            <option value="62-B">62-B: Acetabulum transverse fracture</option>
+            <option value="62-C">62-C: Acetabulum both columns</option>
+          </optgroup>
+          <optgroup label="Spine (51-53)">
+            <option value="Spine-A">Type A: Compression / Burst</option>
+            <option value="Spine-B">Type B: Distraction / Tension band</option>
+            <option value="Spine-C">Type C: Translation / Displacement</option>
+          </optgroup>
+          <option value="Other">Other / Custom</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Anatomy: Dropdown for laterality (Right, Left, Bilateral, Spine, Pelvis) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Anatomy / Laterality
+          </label>
+          <select name="anatomy" id="clinical_anatomy" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            <option value="">Select Laterality / Site...</option>
+            <option value="Right">Right</option>
+            <option value="Left">Left</option>
+            <option value="Bilateral">Bilateral</option>
+            <option value="Spine">Spine</option>
+            <option value="Pelvis">Pelvis</option>
+            <option value="Right Upper Limb">Right Upper Limb</option>
+            <option value="Left Upper Limb">Left Upper Limb</option>
+            <option value="Right Lower Limb">Right Lower Limb</option>
+            <option value="Left Lower Limb">Left Lower Limb</option>
+          </select>
+        </div>
+
+        <!-- Scanogram: Dropdown to indicate scanogram availability -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Scanogram Availability
+          </label>
+          <select name="scanogram" id="clinical_scanogram" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            <option value="No">No (Scanogram Not Available)</option>
+            <option value="Yes">Yes (Scanogram Available)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end space-x-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeModal('clinicalProfileModal')"
+                class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-check"></i>
+          <span>Save Clinical Profile</span>
+        </button>
       </div>
     </form>
   </div>
@@ -585,6 +793,40 @@
             <option value="M">Male</option>
             <option value="F">Female</option>
             <option value="Other">Other / Undisclosed</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Core Orthopedic Data Fields -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Clinical Diagnosis</label>
+        <input type="text" name="diagnosis" placeholder="e.g. Femoral Neck Fracture, ACL Tear, Tibial Plateau Fracture"
+               class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- AO Trauma Classification Score -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">AO Trauma Score</label>
+          <input type="text" name="ao_trauma_score" placeholder="e.g. 31-B2.1 or 42-A1"
+                 class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono placeholder-slate-500">
+          <p class="text-[10px] text-slate-500 mt-1 font-mono">AO/OTA Fracture Classification</p>
+        </div>
+
+        <!-- Target Anatomy -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Target Anatomy</label>
+          <input type="text" name="anatomy" placeholder="e.g. Proximal Femur, Tibia, Spine"
+                 class="glass-input w-full px-3 py-2 rounded-xl text-xs placeholder-slate-500">
+          <p class="text-[10px] text-slate-500 mt-1 font-mono">Anatomical region / bone</p>
+        </div>
+
+        <!-- Scanogram Availability -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Scanogram</label>
+          <select name="scanogram" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+            <option value="No">No (Scanogram Not Available)</option>
+            <option value="Yes">Yes (Scanogram Available)</option>
           </select>
         </div>
       </div>
@@ -843,11 +1085,81 @@
     });
   }
 
-  function openEditModal(cr, name, age, gender) {
+  function openClinicalProfileModal(cr, name, diagnosis = '', ao_grade = 'NA', anatomy = '', scanogram = 'No') {
+    const crElem = document.getElementById('clinical_cr');
+    if (crElem) crElem.value = cr;
+    const dispElem = document.getElementById('clinical_patient_display');
+    if (dispElem) dispElem.textContent = `${cr} • ${name}`;
+    const nameElem = document.getElementById('clinical_patient_name');
+    if (nameElem) nameElem.value = name || '';
+    const diagElem = document.getElementById('clinical_diagnosis');
+    if (diagElem) diagElem.value = diagnosis || '';
+
+    // Set AO Grade
+    const aoSelect = document.getElementById('clinical_ao_grade');
+    if (aoSelect) {
+      let found = false;
+      const targetVal = (ao_grade || 'NA').trim();
+      for (let i = 0; i < aoSelect.options.length; i++) {
+        if (aoSelect.options[i].value.toLowerCase() === targetVal.toLowerCase()) {
+          aoSelect.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found && targetVal) {
+        const opt = new Option(targetVal, targetVal, true, true);
+        aoSelect.add(opt);
+      } else if (!found) {
+        aoSelect.value = 'NA';
+      }
+    }
+
+    // Set Anatomy
+    const anatSelect = document.getElementById('clinical_anatomy');
+    if (anatSelect) {
+      let found = false;
+      const targetAnat = (anatomy || '').trim();
+      for (let i = 0; i < anatSelect.options.length; i++) {
+        if (anatSelect.options[i].value.toLowerCase() === targetAnat.toLowerCase()) {
+          anatSelect.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found && targetAnat) {
+        const opt = new Option(targetAnat, targetAnat, true, true);
+        anatSelect.add(opt);
+      } else if (!found) {
+        anatSelect.value = '';
+      }
+    }
+
+    // Set Scanogram
+    const scanoSelect = document.getElementById('clinical_scanogram');
+    if (scanoSelect) {
+      const isYes = ['yes', 'true', '1', 'available'].includes((scanogram || '').toLowerCase().trim());
+      scanoSelect.value = isYes ? 'Yes' : 'No';
+    }
+
+    const form = document.getElementById('clinicalProfileForm');
+    if (form) {
+      form.action = '/patient/edit/';
+    }
+    openModal('clinicalProfileModal');
+  }
+
+  function openEditModal(cr, name, age, gender, diagnosis = '', ao_trauma_score = '', anatomy = '') {
     document.getElementById('edit_cr').value = cr;
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_age').value = age;
     document.getElementById('edit_gender').value = gender;
+    const diagElem = document.getElementById('edit_diagnosis');
+    if (diagElem) diagElem.value = diagnosis || '';
+    const aoElem = document.getElementById('edit_ao_score');
+    if (aoElem) aoElem.value = ao_trauma_score || '';
+    const anatElem = document.getElementById('edit_anatomy');
+    if (anatElem) anatElem.value = anatomy || '';
     document.getElementById('editForm').action = '/patient/' + encodeURIComponent(cr) + '/edit';
     openModal('editModal');
   }

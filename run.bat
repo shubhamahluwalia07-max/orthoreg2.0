@@ -6,6 +6,8 @@ echo =========================================================================
 echo    ORTHOPEDIC RADIOLOGY REGISTRY - LAUNCHER
 echo =========================================================================
 
+set NGROK_AUTHTOKEN=3JzZPYwP2A7gb9Q6xyBGbNtsDBP_2fpuxh8kAvYS4rok9ke7D
+
 REM Check if virtual environment exists
 if not exist "venv\Scripts\activate.bat" (
     echo [ERROR] Virtual environment 'venv' not found in %CD%

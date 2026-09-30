@@ -25,14 +25,38 @@ scan_trials = db.Table(
 
 
 class User(UserMixin, db.Model):
-    """User model for Role-Based Access Control (Admin/PI vs Viewer)."""
+    """User model for dynamic Role-Based Access Control (Admin, Editor, User) and Status lifecycle."""
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=True, index=True)
+    name = db.Column(db.String(120), nullable=True)
+    username = db.Column(db.String(120), unique=True, nullable=True, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), nullable=False, default='Viewer')  # 'Admin', 'PI', 'Viewer'
+    role = db.Column(db.String(20), nullable=False, default='User')       # 'Admin', 'Editor', 'User'
+    status = db.Column(db.String(20), nullable=False, default='Active')   # 'Pending', 'Active', 'Revoked'
+    must_change_password = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now)
+    approved_at = db.Column(db.DateTime, nullable=True)
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if 'status' not in kwargs or not self.status:
+            self.status = 'Active'
+        if 'role' not in kwargs or not self.role:
+            self.role = 'User'
+        if 'must_change_password' in kwargs:
+            self.must_change_password = kwargs['must_change_password']
+        elif self.must_change_password is None:
+            self.must_change_password = False
+
+        # Ensure email and username fallback
+        if not self.email and self.username and '@' in self.username:
+            self.email = self.username
+        elif not self.username and self.email:
+            self.username = self.email
+        elif not self.email and self.username:
+            self.email = f"{self.username}@orthoreg.org"
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -41,11 +65,36 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     @property
-    def is_admin_or_pi(self):
+    def is_active(self):
+        """Only Active users can authenticate via Flask-Login."""
+        return (self.status or '').capitalize() == 'Active'
+
+    @property
+    def is_admin(self):
         return self.role in ['Admin', 'PI']
 
+    @property
+    def is_editor(self):
+        return self.role in ['Admin', 'Editor', 'PI']
+
+    @property
+    def is_admin_or_pi(self):
+        return self.is_admin
+
+    @property
+    def is_viewer_only(self):
+        return self.role in ['User', 'Viewer']
+
+    @property
+    def display_email(self):
+        return self.email or (f"{self.username}@orthoreg.org" if self.username else "user@orthoreg.org")
+
+    @property
+    def display_name(self):
+        return self.name or self.username or (self.email.split('@')[0] if self.email else "User")
+
     def __repr__(self):
-        return f'<User {self.username} ({self.role})>'
+        return f'<User {self.id}: {self.display_email} ({self.role}/{self.status})>'
 
 
 class Patient(db.Model):
@@ -56,12 +105,26 @@ class Patient(db.Model):
     patient_name = db.Column(db.String(120), nullable=False, default='Anonymous')
     age = db.Column(db.String(20), nullable=True)
     gender = db.Column(db.String(20), nullable=True)
+    diagnosis = db.Column(db.Text, nullable=True)
+    ao_trauma_score = db.Column(db.String(64), nullable=True)
+    ao_grade = db.Column(db.String(64), nullable=True)
+    anatomy = db.Column(db.String(128), nullable=True)
+    scanogram = db.Column(db.String(64), nullable=True, default='No')
     created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     scans = db.relationship('Scan', backref='patient', lazy=True, cascade='all, delete-orphan')
     custom_data = db.relationship('CustomData', backref='patient', lazy=True, cascade='all, delete-orphan')
     trials = db.relationship('Trial', secondary=patient_trials, backref=db.backref('patients', lazy='dynamic'))
+
+    @property
+    def name(self):
+        """Standard alias for patient_name attribute."""
+        return self.patient_name
+
+    @name.setter
+    def name(self, value):
+        self.patient_name = value
 
     @property
     def series(self):

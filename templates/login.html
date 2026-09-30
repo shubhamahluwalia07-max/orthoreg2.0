@@ -1,81 +1,201 @@
 {% extends 'base.html' %}
 
-{% block title %}Sign In - Orthopedic Radiology Registry{% endblock %}
+{% block title %}Sign In & Request Access - Orthopedic Radiology Registry{% endblock %}
 
 {% block content %}
-<div class="min-h-[75vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-md w-full space-y-8 glass-panel p-8 sm:p-10 rounded-2xl shadow-2xl relative overflow-hidden">
+<div class="min-h-[80vh] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-xl w-full space-y-6 glass-panel p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden border border-slate-700/80">
     
     <!-- Top accent glow -->
-    <div class="absolute -top-24 -left-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -top-24 -left-24 w-56 h-56 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-56 h-56 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
+    <!-- Header & Portal Title -->
     <div class="text-center relative">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 shadow-xl shadow-cyan-500/25 mb-4">
         <i class="fa-solid fa-bone text-2xl text-white"></i>
       </div>
-      <h2 class="text-2xl font-bold tracking-tight text-white">Clinical Radiology Portal</h2>
-      <p class="text-sm text-slate-400 mt-1">Sign in to access Orthopedic Patient & Scan Registries</p>
+      <h2 class="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
+        Clinical Radiology Portal
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+          RBAC v2
+        </span>
+      </h2>
+      <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+        Sign in with authorized credentials or submit a formal access request for institutional IRB/clinical trial review.
+      </p>
     </div>
 
-    <!-- Login Form -->
-    <form class="mt-8 space-y-6 relative" method="POST" action="{{ url_for('login') }}">
-      <div class="space-y-4">
+    <!-- Dual Tab Switcher -->
+    <div class="flex items-center p-1 rounded-xl bg-slate-900/90 border border-slate-800 relative z-10">
+      <button type="button" id="tabBtnSignIn" onclick="switchPortalTab('signin')"
+              class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md">
+        <i class="fa-solid fa-right-to-bracket text-xs"></i> Sign In
+      </button>
+      <button type="button" id="tabBtnRequest" onclick="switchPortalTab('request')"
+              class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-user-plus text-xs"></i> Request Access
+      </button>
+    </div>
+
+    <!-- TAB 1: SIGN IN FORM -->
+    <div id="sectionSignIn" class="space-y-4">
+      <!-- Dynamic Error Banner -->
+      <div id="loginErrorMessage" class="hidden p-3 rounded-xl bg-rose-950/50 border border-rose-600/40 text-rose-300 text-xs flex items-center justify-between shadow-lg">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-circle-exclamation text-rose-400"></i>
+          <span id="loginErrorText"></span>
+        </div>
+        <button type="button" onclick="document.getElementById('loginErrorMessage').classList.add('hidden')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="signInForm" class="space-y-4" method="POST" action="{{ url_for('login') }}">
         <div>
-          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Username</label>
+          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Email or Username
+          </label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <i class="fa-solid fa-user-doctor"></i>
             </div>
             <input id="username" name="username" type="text" required
-              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500"
-              placeholder="e.g. admin or viewer">
+              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-xs placeholder-slate-500 font-mono"
+              placeholder="e.g. admin@orthoreg.org or admin">
           </div>
         </div>
 
         <div>
-          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+            Password
+          </label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <i class="fa-solid fa-lock"></i>
             </div>
             <input id="password" name="password" type="password" required
-              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-sm placeholder-slate-500"
+              class="glass-input block w-full pl-10 pr-3 py-2.5 rounded-xl text-xs placeholder-slate-500 font-mono"
               placeholder="••••••••">
           </div>
         </div>
-      </div>
 
-      <button type="submit"
-        class="w-full flex justify-center items-center py-3 px-4 rounded-xl text-sm font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
-        <i class="fa-solid fa-right-to-bracket mr-2"></i> Access Registry
-      </button>
-    </form>
-
-    <!-- Pre-seeded Credentials Card -->
-    <div class="pt-4 border-t border-slate-800 text-xs text-slate-400">
-      <div class="flex items-center justify-between mb-2">
-        <span class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]"><i class="fa-solid fa-key text-cyan-400 mr-1"></i> Quick Login Credentials</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-left">
-        <button type="button" onclick="fillCreds('admin', 'admin123')"
-          class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-emerald-400 group-hover:text-emerald-300">Admin / PI</span>
-            <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
-          </div>
-          <div class="font-mono text-[10px] text-slate-400 mt-1">admin / admin123</div>
+        <button type="submit" id="signInSubmitBtn"
+          class="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-right-to-bracket mr-2"></i> Access Registry
         </button>
+      </form>
 
-        <button type="button" onclick="fillCreds('viewer', 'viewer123')"
-          class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-cyan-400 group-hover:text-cyan-300">Viewer</span>
-            <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
-          </div>
-          <div class="font-mono text-[10px] text-slate-400 mt-1">viewer / viewer123</div>
-        </button>
+      <!-- Quick Login Credentials helper -->
+      <div class="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400">
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-semibold text-slate-300 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-key text-cyan-400 mr-1"></i> Quick Test Credentials</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-left">
+          <button type="button" onclick="fillCreds('admin', 'admin123')"
+            class="p-2 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-cyan-400 text-xs">Admin / PI</span>
+              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 mt-0.5">admin / admin123</div>
+          </button>
+          <button type="button" onclick="fillCreds('viewer', 'viewer123')"
+            class="p-2 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all text-left group">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-emerald-400 text-xs">Viewer</span>
+              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-500"></i>
+            </div>
+            <div class="font-mono text-[10px] text-slate-400 mt-0.5">viewer / viewer123</div>
+          </button>
+        </div>
       </div>
+    </div>
+
+    <!-- TAB 2: REQUEST ACCESS FORM -->
+    <div id="sectionRequest" class="hidden space-y-4">
+      <div class="p-3 rounded-xl bg-purple-950/30 border border-purple-800/40 text-xs text-purple-200 flex items-start gap-2.5">
+        <i class="fa-solid fa-shield-halved text-purple-400 mt-0.5"></i>
+        <div>
+          <span class="font-bold text-white">IRB / HIPAA Verification:</span>
+          <p class="text-[11px] text-slate-300 mt-0.5">
+            External surgeons, radiologists, and research fellows must submit their institutional details. New accounts are initially set to <strong>Pending</strong> until an Administrator approves your credentials and assigns your role.
+          </p>
+        </div>
+      </div>
+
+      <form class="space-y-3.5" method="POST" action="{{ url_for('request_access') }}">
+        <div>
+          <label for="req_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Full Name <span class="text-rose-400">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-id-card"></i>
+            </div>
+            <input id="req_name" name="name" type="text" required
+              class="glass-input block w-full pl-10 pr-3 py-2 rounded-xl text-xs placeholder-slate-500"
+              placeholder="e.g. Dr. Sarah Jenkins, MD">
+          </div>
+        </div>
+
+        <div>
+          <label for="req_email" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Institutional Email <span class="text-rose-400">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <input id="req_email" name="email" type="email" required
+              class="glass-input block w-full pl-10 pr-3 py-2 rounded-xl text-xs placeholder-slate-500 font-mono"
+              placeholder="s.jenkins@hospital.org">
+          </div>
+        </div>
+
+        <div>
+          <label for="req_dept" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Department / Affiliation
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-hospital"></i>
+            </div>
+            <input id="req_dept" name="department" type="text"
+              class="glass-input block w-full pl-10 pr-3 py-2 rounded-xl text-xs placeholder-slate-500"
+              placeholder="e.g. Department of Orthopedic Surgery">
+          </div>
+        </div>
+
+        <div>
+          <label for="req_password" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">
+            Choose Password <span class="text-rose-400">*</span>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <input id="req_password" name="password" type="password" minlength="6" required
+              class="glass-input block w-full pl-10 pr-3 py-2 rounded-xl text-xs placeholder-slate-500 font-mono"
+              placeholder="Min. 6 characters">
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full flex justify-center items-center py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 shadow-lg shadow-purple-500/25 transition-all transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-paper-plane mr-2"></i> Submit Access Request
+        </button>
+      </form>
+    </div>
+
+    <!-- Security & Compliance Footer Badges -->
+    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
+      <span class="flex items-center gap-1">
+        <i class="fa-solid fa-lock text-emerald-400"></i> HIPAA & IRB Safe Mode
+      </span>
+      <span class="font-mono">
+        Cornerstone3D PACS Engine
+      </span>
     </div>
 
   </div>
@@ -86,5 +206,102 @@
     document.getElementById('username').value = u;
     document.getElementById('password').value = p;
   }
+
+  function showLoginError(msg) {
+    const errBox = document.getElementById('loginErrorMessage');
+    const errText = document.getElementById('loginErrorText');
+    if (errBox && errText) {
+      errText.textContent = msg;
+      errBox.classList.remove('hidden');
+    } else {
+      alert(msg);
+    }
+  }
+
+  function switchPortalTab(tab) {
+    const btnSignIn = document.getElementById('tabBtnSignIn');
+    const btnRequest = document.getElementById('tabBtnRequest');
+    const secSignIn = document.getElementById('sectionSignIn');
+    const secRequest = document.getElementById('sectionRequest');
+
+    if (tab === 'request') {
+      btnRequest.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md";
+      btnSignIn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+      secSignIn.classList.add('hidden');
+      secRequest.classList.remove('hidden');
+    } else {
+      btnSignIn.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-md";
+      btnRequest.className = "flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-white";
+      secRequest.classList.add('hidden');
+      secSignIn.classList.remove('hidden');
+    }
+  }
+
+  // Handle URL hash or param
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'request' || window.location.hash === '#request-access') {
+      switchPortalTab('request');
+    }
+
+    const signInForm = document.getElementById('signInForm');
+    if (signInForm) {
+      signInForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const errBox = document.getElementById('loginErrorMessage');
+        if (errBox) errBox.classList.add('hidden');
+
+        const submitBtn = document.getElementById('signInSubmitBtn');
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Authenticating...';
+        }
+
+        try {
+          const formData = new FormData(signInForm);
+          const response = await fetch(signInForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          });
+
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.redirect) {
+              window.location.href = data.redirect;
+              return;
+            }
+            if (data.error) {
+              showLoginError(data.error);
+            } else {
+              showLoginError('Authentication failed. Please verify credentials.');
+            }
+          } else if (response.redirected) {
+            window.location.href = response.url;
+            return;
+          } else {
+            // Server returned standard response; execute fallback navigation
+            signInForm.submit();
+            return;
+          }
+        } catch (err) {
+          console.error('Fetch error during login:', err);
+          // Fallback to standard browser form submission
+          signInForm.submit();
+          return;
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
+        }
+      });
+    }
+  });
 </script>
 {% endblock %}

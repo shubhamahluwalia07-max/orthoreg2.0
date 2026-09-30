@@ -3,7 +3,7 @@
 {% block title %}{{ trial.trial_name }} - Clinical Trial Dashboard{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="w-full space-y-6">
 
   <!-- Top Breadcrumb & Actions Bar -->
   <div class="glass-panel p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -28,23 +28,42 @@
 
     <!-- Actions -->
     <div class="flex items-center flex-wrap gap-2">
-      {% if current_user.is_admin_or_pi %}
-      <button onclick="openEditTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}', {{ trial.target_sample_size or 50 }}, '{{ (trial.description or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', {{ trial.get_required_modalities()|tojson }})"
+      {% if current_user.is_admin %}
+      <button id="editTrialBtn"
+         data-modal-target="editTrialModal"
+         onclick="openEditTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}', {{ trial.target_sample_size or 50 }}, '{{ (trial.description or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', {{ trial.get_required_modalities()|tojson }})"
          class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-amber-300 transition-all flex items-center">
         <i class="fa-solid fa-pen-to-square mr-1.5 text-amber-400"></i> Edit Protocol
       </button>
 
-      <button onclick="openDeleteTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}')"
+      <button id="deleteTrialBtn"
+         data-modal-target="deleteTrialModal"
+         data-trial-id="{{ trial.id }}"
+         data-trial-name="{{ trial.trial_name|escape }}"
+         onclick="openDeleteTrialModal({{ trial.id }}, '{{ trial.trial_name|escape }}')"
          class="px-3.5 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-xs font-semibold text-rose-300 transition-all flex items-center">
         <i class="fa-solid fa-trash-can mr-1.5 text-rose-400"></i> Delete Trial
       </button>
 
-      <button onclick="openModal('importTemplateModal')"
+      <button id="importTemplateBtn"
+         data-modal-target="importTemplateModal"
+         onclick="openModal('importTemplateModal')"
          class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-cyan-300 transition-all flex items-center">
         <i class="fa-solid fa-file-csv mr-1.5 text-cyan-400"></i> Import Data Template
       </button>
+      {% endif %}
       
-      <button onclick="openModal('enrollPatientModal')"
+      {% if current_user.is_editor %}
+      <button id="editSchemaBtn"
+         data-modal-target="editSchemaModal"
+         onclick="openModal('editSchemaModal')"
+         class="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs font-semibold text-indigo-200 transition-all flex items-center">
+        <i class="fa-solid fa-sliders mr-1.5 text-indigo-400"></i> Edit Schema
+      </button>
+
+      <button id="enrollPatientBtn"
+         data-modal-target="enrollPatientModal"
+         onclick="openModal('enrollPatientModal')"
          class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-xs font-semibold text-purple-200 transition-all flex items-center">
         <i class="fa-solid fa-user-plus mr-1.5"></i> Enroll Patient
       </button>
@@ -139,7 +158,7 @@
         <div class="flex flex-wrap gap-1.5">
           {% for m, m_info in modality_stats.items() %}
             <div class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 text-xs">
-              <span class="font-mono font-bold text-cyan-400">{{ m }}</span>
+              <span class="font-mono font-bold text-cyan-400">{{ modality_display_names.get(m.upper(), m) }}</span>
               <span class="text-[10px] text-slate-400 font-mono">({{ m_info.count }}/{{ recruited_count }})</span>
             </div>
           {% else %}
@@ -163,32 +182,95 @@
           </button>
         </div>
         <div class="text-2xl font-bold text-white font-mono">
-          {{ schema|length }} <span class="text-xs text-slate-400 font-sans font-normal">Variables</span>
+          {{ (dynamic_schema or schema)|length }} <span class="text-xs text-slate-400 font-sans font-normal">Variables</span>
         </div>
         <div class="mt-2 flex flex-wrap gap-1">
-          {% for f in schema[:4] %}
+          {% for f in (dynamic_schema or schema)[:4] %}
             <span class="px-2 py-0.5 rounded bg-purple-950/60 border border-purple-800/60 text-[10px] font-mono text-purple-300">
               {{ f.name }} <span class="opacity-60">({{ f.type }})</span>
             </span>
           {% endfor %}
-          {% if schema|length > 4 %}
-            <span class="px-1.5 py-0.5 text-[10px] text-slate-400">+{{ schema|length - 4 }} more</span>
+          {% if (dynamic_schema or schema)|length > 4 %}
+            <span class="px-1.5 py-0.5 text-[10px] text-slate-400">+{{ (dynamic_schema or schema)|length - 4 }} more</span>
           {% endif %}
         </div>
       </div>
       <div class="mt-3 pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
         <span>Template Source:</span>
-        <span class="font-mono text-cyan-400">{% if schema %}CSV Template{% else %}None{% endif %}</span>
+        <span class="font-mono text-cyan-400">{% if dynamic_schema or schema %}CSV Template{% else %}None{% endif %}</span>
       </div>
     </div>
 
   </div>
 
+  <!-- Clinical Cohort Orthopedic Context Header Strip -->
+  <div class="glass-panel p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center text-sm shrink-0">
+        <i class="fa-solid fa-notes-medical"></i>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          Clinical Cohort Profile
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Quick Context</span>
+        </h4>
+        <p class="text-[11px] text-slate-400">Aggregated clinical diagnoses, AO classifications, and anatomical targets across this trial cohort.</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Cohort Diagnoses Summary -->
+      <div class="px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
+        <span class="text-[10px] uppercase font-mono text-slate-400 block mb-0.5">Diagnoses</span>
+        <div class="flex flex-wrap gap-1">
+          {% for d in cohort_diagnoses[:3] %}
+            <span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-200 text-[10px] font-medium truncate max-w-[140px]" title="{{ d }}">{{ d }}</span>
+          {% else %}
+            <span class="text-slate-500 italic text-[11px]">No diagnoses recorded</span>
+          {% endfor %}
+          {% if cohort_diagnoses|length > 3 %}
+            <span class="text-[10px] text-slate-400 font-mono">+{{ cohort_diagnoses|length - 3 }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Cohort AO Trauma Scores -->
+      <div class="px-3 py-1.5 rounded-xl bg-slate-950/80 border border-amber-500/30 text-xs">
+        <span class="text-[10px] uppercase font-mono text-amber-400 block mb-0.5">AO Trauma Classification</span>
+        <div class="flex flex-wrap gap-1">
+          {% for ao in cohort_ao_scores[:4] %}
+            <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px]">{{ ao }}</span>
+          {% else %}
+            <span class="text-slate-500 italic text-[11px]">Unclassified</span>
+          {% endfor %}
+          {% if cohort_ao_scores|length > 4 %}
+            <span class="text-[10px] text-amber-400 font-mono">+{{ cohort_ao_scores|length - 4 }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Cohort Target Anatomy -->
+      <div class="px-3 py-1.5 rounded-xl bg-slate-950/80 border border-indigo-500/30 text-xs">
+        <span class="text-[10px] uppercase font-mono text-indigo-400 block mb-0.5">Target Anatomy</span>
+        <div class="flex flex-wrap gap-1">
+          {% for anat in cohort_anatomies[:3] %}
+            <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px]">{{ anat }}</span>
+          {% else %}
+            <span class="text-slate-500 italic text-[11px]">General</span>
+          {% endfor %}
+          {% if cohort_anatomies|length > 3 %}
+            <span class="text-[10px] text-indigo-400 font-mono">+{{ cohort_anatomies|length - 3 }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Two-Pane Layout: Left Sidebar Patients, Right Dynamic Form -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
     
     <!-- LEFT SIDEBAR: Recruited Patient List -->
-    <div class="lg:col-span-4 glass-panel p-4 rounded-2xl space-y-3">
+    <div class="lg:col-span-4 glass-panel p-4 rounded-2xl flex flex-col h-full space-y-3">
       <div class="flex items-center justify-between pb-2 border-b border-slate-800">
         <div class="flex items-center gap-2">
           <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300 font-mono">
@@ -213,7 +295,7 @@
       </div>
 
       <!-- Scrollable Patient Cards Container -->
-      <div class="max-h-[680px] overflow-y-auto space-y-2 pr-1" id="patientSidebarList">
+      <div class="flex-1 min-h-[400px] overflow-y-auto space-y-2 pr-1" id="patientSidebarList">
         {% for ps in patient_stats %}
         {% set p = ps.patient %}
         {% set is_active = (active_patient_stat and active_patient_stat.patient.cr_number == p.cr_number) %}
@@ -238,6 +320,18 @@
             <span class="text-slate-400 text-[11px]">{{ p.age or 'N/A' }} • {{ p.gender or 'O' }}</span>
           </div>
 
+          <!-- Quick Clinical Badges in Sidebar -->
+          {% if p.diagnosis or p.ao_trauma_score or p.anatomy %}
+          <div class="mt-1.5 flex flex-wrap items-center gap-1 text-[10px]">
+            {% if p.diagnosis %}
+              <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 truncate max-w-[150px]" title="{{ p.diagnosis }}">{{ p.diagnosis }}</span>
+            {% endif %}
+            {% if p.ao_trauma_score %}
+              <span class="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">AO:{{ p.ao_trauma_score }}</span>
+            {% endif %}
+          </div>
+          {% endif %}
+
           <!-- Modalities & Completeness Breakdown -->
           <div class="mt-2.5 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/60">
             <span class="flex items-center gap-1">
@@ -245,8 +339,8 @@
               {{ p.scans|length }} scan(s)
             </span>
             {% if ps.missing_modalities %}
-              <span class="text-rose-400 text-[10px] font-mono" title="Missing required modalities: {{ ps.missing_modalities|join(', ') }}">
-                <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Missing {{ ps.missing_modalities[0] }}
+              <span class="text-rose-400 text-[10px] font-mono" title="Missing required modalities: {% for mm in ps.missing_modalities %}{{ modality_display_names.get(mm.upper(), mm) }}{% if not loop.last %}, {% endif %}{% endfor %}">
+                <i class="fa-solid fa-triangle-exclamation mr-0.5"></i> Missing {{ modality_display_names.get(ps.missing_modalities[0].upper(), ps.missing_modalities[0]) }}
               </span>
             {% else %}
               <span class="text-emerald-400 text-[10px] font-mono">
@@ -285,13 +379,32 @@
               </span>
               <h3 class="text-lg font-bold text-white">{{ p.patient_name }}</h3>
             </div>
-            <p class="text-xs text-slate-400 mt-1 flex items-center space-x-3">
+            <p class="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
               <span><strong>Demographics:</strong> {{ p.age or 'Unknown Age' }} • {{ p.gender or 'Unknown' }}</span>
               <span>•</span>
               <span><strong>Registered:</strong> {{ p.created_at.strftime('%Y-%m-%d') }}</span>
               <span>•</span>
               <span><strong>Total Scans:</strong> {{ p.scans|length }}</span>
             </p>
+
+            <!-- Orthopedic Context Badges in Patient Header -->
+            <div class="mt-2.5 flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700/80 text-slate-200 text-xs">
+                <i class="fa-solid fa-stethoscope text-cyan-400 text-[11px]"></i>
+                <strong class="text-slate-400 font-normal">Diagnosis:</strong>
+                <span class="font-medium text-white">{{ p.diagnosis or 'Not Documented' }}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-950/40 border border-amber-600/40 text-amber-300 text-xs font-mono">
+                <i class="fa-solid fa-bone text-amber-400 text-[11px]"></i>
+                <strong class="text-amber-400/80 font-sans font-normal">AO Score:</strong>
+                <span class="font-bold">{{ p.ao_trauma_score or 'N/A' }}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-950/40 border border-indigo-600/40 text-indigo-300 text-xs">
+                <i class="fa-solid fa-child-reaching text-indigo-400 text-[11px]"></i>
+                <strong class="text-indigo-400/80 font-normal">Anatomy:</strong>
+                <span class="font-medium text-white">{{ p.anatomy or 'Unspecified' }}</span>
+              </span>
+            </div>
           </div>
 
           <!-- PACS & Actions -->
@@ -318,9 +431,10 @@
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">Modality Compliance:</span>
           {% for m in required_modalities %}
             {% set has_mod = (m.upper() in active_patient_stat.modalities_present) %}
+            {% set display_m = modality_display_names.get(m.upper(), m) %}
             <span class="px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 {% if has_mod %}bg-emerald-950/60 text-emerald-300 border border-emerald-700/60{% else %}bg-rose-950/60 text-rose-300 border border-rose-800/60{% endif %}">
               <i class="fa-solid {% if has_mod %}fa-circle-check text-emerald-400{% else %}fa-circle-xmark text-rose-400{% endif %}"></i>
-              {{ m }} {% if has_mod %}Verified{% else %}Missing{% endif %}
+              {{ display_m }} {% if has_mod %}Verified{% else %}Missing{% endif %}
             </span>
           {% else %}
             <span class="text-xs text-slate-500 italic">No specific modalities mandated</span>
@@ -338,39 +452,65 @@
             </h4>
             <p class="text-xs text-slate-400 mt-0.5">Clinical trial parameters generated dynamically from imported template schema.</p>
           </div>
-          <span class="text-xs font-mono text-purple-300 bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-800/50">
-            {{ active_patient_stat.fields_fulfilled }}/{{ schema|length }} Parameters Completed
-          </span>
+          <div class="flex items-center gap-2">
+            {% if current_user.is_editor %}
+            <button type="button" onclick="openModal('editSchemaModal')" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs font-semibold text-indigo-200 transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-sliders text-indigo-400"></i> Edit Schema
+            </button>
+            {% endif %}
+            <span class="text-xs font-mono text-purple-300 bg-purple-950/60 px-2.5 py-1 rounded-lg border border-purple-800/50">
+              {{ active_patient_stat.fields_fulfilled }}/{{ (dynamic_schema or schema)|length }} Parameters Completed
+            </span>
+          </div>
         </div>
 
-        {% if schema %}
+        {% set dynamic_schema = dynamic_schema or schema %}
+        {% if dynamic_schema %}
         <form method="POST" action="{{ url_for('save_trial_patient_edc', trial_id=trial.id, cr_number=p.cr_number) }}" enctype="multipart/form-data">
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for field in schema %}
+            {% for field in dynamic_schema %}
             {% set f_name = field.name %}
             {% set f_type = field.type %}
-            {% set current_val = p_data.get(f_name, '') %}
+            {% set saved_val = p_data.get(f_name) %}
+            {% set prefilled_val = get_patient_attribute_for_field(f_name, p, f_type) %}
+            {% set has_saved_val = (saved_val is not none and saved_val|string|trim != '') %}
+            {% set current_val = saved_val if has_saved_val else (prefilled_val if prefilled_val is not none else '') %}
+            {% set is_prefilled = (not has_saved_val and prefilled_val is not none and prefilled_val|string|trim != '') %}
+            {% set is_locked = is_identifying_patient_field(f_name) and (current_val|string|trim != '') %}
             
             <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800/80 space-y-2 hover:border-slate-700 transition-colors">
               <div class="flex items-center justify-between">
                 <label class="block text-xs font-semibold text-slate-200">
                   {{ f_name }}
                 </label>
-                <!-- Field Type Pill -->
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono {% if f_type == 'Number' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% elif f_type == 'Date' %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% elif f_type == 'File' or f_type == 'Image' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
-                  {{ f_type }}
-                </span>
+                <div class="flex items-center gap-1.5">
+                  {% if is_locked %}
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 flex items-center gap-1" title="Locked: Linked to Patient Registry Record">
+                      <i class="fa-solid fa-lock text-[8px]"></i> Locked
+                    </span>
+                  {% elif is_prefilled %}
+                    <span class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-purple-500/10 text-purple-300 border border-purple-500/30 flex items-center gap-1" title="Auto-populated from Patient Demographics">
+                      <i class="fa-solid fa-wand-magic-sparkles text-[8px]"></i> Pre-filled
+                    </span>
+                  {% endif %}
+                  <!-- Field Type Pill -->
+                  <span class="px-2 py-0.5 rounded text-[10px] font-mono {% if f_type == 'Number' %}bg-blue-500/20 text-blue-300 border border-blue-500/30{% elif f_type == 'Date' %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% elif f_type == 'File' or f_type == 'Image' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30{% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
+                    {{ f_type }}
+                  </span>
+                </div>
               </div>
 
               <!-- Input Rendered According to Inferred Type -->
               {% if f_type == 'Number' %}
                 <input type="number" step="any" name="field_{{ loop.index0 }}" value="{{ current_val }}"
                        placeholder="Enter numeric value..."
-                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono">
+                       {% if is_locked %}readonly{% endif %}
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono {% if is_locked %}bg-slate-800/60 cursor-not-allowed text-slate-300 opacity-90{% endif %}">
               {% elif f_type == 'Date' %}
                 <input type="date" name="field_{{ loop.index0 }}" value="{{ current_val }}"
-                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono">
+                       {% if is_locked %}readonly{% endif %}
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono {% if is_locked %}bg-slate-800/60 cursor-not-allowed text-slate-300 opacity-90{% endif %}">
               {% elif f_type == 'File' or f_type == 'Image' %}
                 <div class="space-y-2">
                   {% if current_val %}
@@ -389,7 +529,8 @@
               {% else %}
                 <input type="text" name="field_{{ loop.index0 }}" value="{{ current_val }}"
                        placeholder="Enter {{ f_name }}..."
-                       class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+                       {% if is_locked %}readonly{% endif %}
+                       class="glass-input w-full px-3 py-2 rounded-xl text-xs {% if is_locked %}bg-slate-800/60 cursor-not-allowed text-slate-300 opacity-90{% endif %}">
               {% endif %}
             </div>
             {% endfor %}
@@ -399,9 +540,15 @@
             <span class="text-xs text-slate-400">
               <i class="fa-solid fa-shield-halved text-cyan-400 mr-1"></i> Changes are recorded to patient trial history.
             </span>
+            {% if current_user.is_editor %}
             <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-500/20 transition-all flex items-center gap-2">
               <i class="fa-solid fa-floppy-disk"></i> Save EDC Record
             </button>
+            {% else %}
+            <span class="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-400 text-xs font-mono flex items-center gap-1.5 border border-slate-700">
+              <i class="fa-solid fa-lock text-[10px] text-amber-400"></i> Read-Only (Viewer Access)
+            </span>
+            {% endif %}
           </div>
 
         </form>
@@ -413,7 +560,7 @@
           <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
             Upload a CSV template with column headers for this trial. The system will automatically infer data types (Text, Number, Date, Image/File) and render your custom data capture forms.
           </p>
-          {% if current_user.is_admin_or_pi %}
+          {% if current_user.is_admin %}
           <button onclick="openModal('importTemplateModal')" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20">
             <i class="fa-solid fa-file-arrow-up mr-1.5"></i> Import CSV Data Template
           </button>
@@ -446,8 +593,8 @@
 
 </div>
 
-<!-- Enroll Patient Modal (Admin/PI) -->
-{% if current_user.is_admin_or_pi %}
+<!-- Enroll Patient Modal (Editor / Admin) -->
+{% if current_user.is_editor %}
 <div id="enrollPatientModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
   <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
     <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
@@ -483,6 +630,95 @@
   </div>
 </div>
 
+<!-- Edit Trial EDC Schema Modal (Admin & Editor) -->
+<div id="editSchemaModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
+  <div class="glass-panel w-full max-w-3xl p-6 rounded-2xl border border-indigo-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl max-h-[90vh] flex flex-col">
+    <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4 flex-shrink-0">
+      <div class="flex items-center space-x-2.5">
+        <span class="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-base">
+          <i class="fa-solid fa-sliders"></i>
+        </span>
+        <div>
+          <h3 class="text-base font-bold text-white">Edit Trial EDC Schema</h3>
+          <p class="text-[11px] text-indigo-400 font-mono">Rename parameters, change data types, add or delete variables</p>
+        </div>
+      </div>
+      <button onclick="closeModal('editSchemaModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="editSchemaForm" method="POST" action="{{ url_for('update_trial_schema', trial_id=trial.id) }}" class="flex flex-col flex-1 min-h-0">
+      <div id="deletedFieldsContainer"></div>
+
+      <div class="flex items-center justify-between mb-3 flex-shrink-0">
+        <p class="text-xs text-slate-400">
+          Modify the dynamic form columns below. Renaming preserves existing patient values; deleting drops the column.
+        </p>
+        <button type="button" onclick="addNewSchemaRow()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1 shadow-md shadow-indigo-600/20 transition-all">
+          <i class="fa-solid fa-plus text-[10px]"></i> Add Column
+        </button>
+      </div>
+
+      <!-- Scrollable list of schema rows -->
+      <div class="flex-1 overflow-y-auto space-y-2.5 pr-2 mb-4" id="schemaRowsList">
+        {% for field in (dynamic_schema or schema) %}
+        <div class="schema-row bg-slate-900/70 p-3 rounded-xl border border-slate-800 flex items-center gap-3">
+          <input type="hidden" name="old_name[]" value="{{ field.name }}">
+          
+          <div class="flex-1">
+            <label class="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">Column / Variable Name</label>
+            <input type="text" name="field_name[]" value="{{ field.name }}" required
+                   placeholder="e.g. Follow-up Range of Motion"
+                   class="glass-input w-full px-3 py-1.5 rounded-xl text-xs font-medium text-white">
+          </div>
+
+          <div class="w-48">
+            <label class="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">Data Type</label>
+            <select name="field_type[]" class="glass-input w-full px-3 py-1.5 rounded-xl text-xs text-slate-200">
+              <option value="Text" {% if field.type == 'Text' %}selected{% endif %}>Text</option>
+              <option value="Number" {% if field.type == 'Number' %}selected{% endif %}>Number</option>
+              <option value="Date" {% if field.type == 'Date' %}selected{% endif %}>Date</option>
+              <option value="File/PDF/Image" {% if field.type in ['File', 'Image', 'PDF', 'File/PDF/Image'] %}selected{% endif %}>File / PDF / Image</option>
+            </select>
+          </div>
+
+          <div class="pt-4">
+            <button type="button" onclick="deleteSchemaRow(this, '{{ field.name|escape }}')"
+                    class="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-400 hover:text-rose-300 transition-colors"
+                    title="Delete Column">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div id="noSchemaPlaceholder" class="p-8 text-center text-slate-400">
+          <p class="text-xs">No parameters defined yet. Click "Add Column" above to define your first EDC parameter.</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800 flex-shrink-0">
+        <span class="text-xs text-slate-500 font-mono" id="schemaCountDisplay">
+          {{ (dynamic_schema or schema)|length }} Parameter(s)
+        </span>
+        <div class="flex items-center space-x-2">
+          <button type="button" onclick="closeModal('editSchemaModal')"
+                  class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>Save Schema Changes</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- Admin-Only Modals: Import Template, Edit Trial, Delete Trial -->
+{% if current_user.is_admin %}
 <!-- Import Data Template Modal -->
 <div id="importTemplateModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
   <div class="glass-panel w-full max-w-md p-6 rounded-2xl border border-slate-700 shadow-2xl relative">
@@ -513,6 +749,9 @@
         <button type="submit" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-xs font-semibold text-slate-950 shadow-lg shadow-cyan-500/20">Import & Generate Schema</button>
       </div>
     </form>
+  </div>
+</div>
+
 <!-- Edit Clinical Trial Modal -->
 <div id="editTrialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
   <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-amber-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
@@ -554,19 +793,19 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CR" id="edit_mod_CR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CR (X-Ray)</span>
+              <span class="font-mono">X-Ray (CR)</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CT" id="edit_mod_CT" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CT (Computed)</span>
+              <span class="font-mono">CT Scan</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="MR" id="edit_mod_MR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">MR (MRI)</span>
+              <span class="font-mono">MRI</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="DX" id="edit_mod_DX" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">DX (Digital)</span>
+              <span class="font-mono">Digital X-Ray</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="SR" id="edit_mod_SR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
@@ -663,6 +902,7 @@
   // Live sidebar search filtering
   function filterPatientSidebar() {
     var input = document.getElementById('patientFilterInput');
+    if (!input) return;
     var filter = input.value.toLowerCase().trim();
     var cards = document.getElementsByClassName('patient-sidebar-card');
     for (var i = 0; i < cards.length; i++) {
@@ -673,6 +913,135 @@
       } else {
         cards[i].style.display = "none";
       }
+    }
+  }
+
+  // Modal event listeners and keyboard navigation
+  document.addEventListener('DOMContentLoaded', function() {
+    // Explicit listener for Delete Trial button
+    var deleteBtn = document.getElementById('deleteTrialBtn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function(e) {
+        var tid = this.getAttribute('data-trial-id');
+        var tname = this.getAttribute('data-trial-name');
+        if (tid) {
+          openDeleteTrialModal(tid, tname);
+        } else {
+          openModal('deleteTrialModal');
+        }
+      });
+    }
+
+    // Explicit listener for Import Template button
+    var importBtn = document.getElementById('importTemplateBtn');
+    if (importBtn) {
+      importBtn.addEventListener('click', function(e) {
+        openModal('importTemplateModal');
+      });
+    }
+
+    // Generic listener for any element with data-modal-target
+    document.querySelectorAll('[data-modal-target]').forEach(function(btn) {
+      if (btn.id === 'deleteTrialBtn' || btn.id === 'importTemplateBtn') return;
+      btn.addEventListener('click', function(e) {
+        var targetId = this.getAttribute('data-modal-target');
+        if (targetId && !this.getAttribute('onclick')) {
+          e.preventDefault();
+          openModal(targetId);
+        }
+      });
+    });
+
+    // Close modal when clicking on backdrop
+    document.querySelectorAll('.modal-backdrop').forEach(function(modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.add('hidden');
+        }
+      });
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop:not(.hidden)').forEach(function(modal) {
+          modal.classList.add('hidden');
+        });
+      }
+    });
+  });
+
+  // Dynamic EDC Schema editing functions
+  function addNewSchemaRow() {
+    const list = document.getElementById('schemaRowsList');
+    if (!list) return;
+    const placeholder = document.getElementById('noSchemaPlaceholder');
+    if (placeholder) placeholder.remove();
+
+    const row = document.createElement('div');
+    row.className = 'schema-row bg-slate-900/70 p-3 rounded-xl border border-slate-800 flex items-center gap-3';
+    row.innerHTML = `
+      <input type="hidden" name="old_name[]" value="">
+      
+      <div class="flex-1">
+        <label class="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">Column / Variable Name</label>
+        <input type="text" name="field_name[]" value="" required
+               placeholder="e.g. Follow-up Score"
+               class="glass-input w-full px-3 py-1.5 rounded-xl text-xs font-medium text-white">
+      </div>
+
+      <div class="w-48">
+        <label class="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">Data Type</label>
+        <select name="field_type[]" class="glass-input w-full px-3 py-1.5 rounded-xl text-xs text-slate-200">
+          <option value="Text" selected>Text</option>
+          <option value="Number">Number</option>
+          <option value="Date">Date</option>
+          <option value="File/PDF/Image">File / PDF / Image</option>
+        </select>
+      </div>
+
+      <div class="pt-4">
+        <button type="button" onclick="deleteSchemaRow(this, '')"
+                class="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-400 hover:text-rose-300 transition-colors"
+                title="Delete Column">
+          <i class="fa-solid fa-trash-can text-xs"></i>
+        </button>
+      </div>
+    `;
+    list.appendChild(row);
+    updateSchemaCount();
+    const input = row.querySelector('input[name="field_name[]"]');
+    if (input) input.focus();
+  }
+
+  function deleteSchemaRow(btn, origName) {
+    const row = btn.closest('.schema-row');
+    if (!row) return;
+
+    const oldNameInput = row.querySelector('input[name="old_name[]"]');
+    const fieldNameInput = row.querySelector('input[name="field_name[]"]');
+    const oldName = (oldNameInput && oldNameInput.value) || origName || (fieldNameInput && fieldNameInput.value) || '';
+
+    if (oldName.trim()) {
+      const container = document.getElementById('deletedFieldsContainer');
+      if (container) {
+        const delInput = document.createElement('input');
+        delInput.type = 'hidden';
+        delInput.name = 'deleted_fields[]';
+        delInput.value = oldName.trim();
+        container.appendChild(delInput);
+      }
+    }
+
+    row.remove();
+    updateSchemaCount();
+  }
+
+  function updateSchemaCount() {
+    const rows = document.querySelectorAll('#schemaRowsList .schema-row');
+    const disp = document.getElementById('schemaCountDisplay');
+    if (disp) {
+      disp.textContent = rows.length + ' Parameter(s)';
     }
   }
 </script>

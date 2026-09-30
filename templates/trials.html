@@ -3,7 +3,7 @@
 {% block title %}Curate Trials - Orthopedic Radiology Registry{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div class="w-full space-y-6">
 
   <!-- Header with Title & Action -->
   <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -87,7 +87,7 @@
           <div class="mt-2 flex flex-wrap gap-1">
             {% for m in req_mods %}
             <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[10px] font-mono text-cyan-400">
-              {{ m }}
+              {{ modality_display_names.get(m.upper(), m) }}
             </span>
             {% endfor %}
           </div>
@@ -122,7 +122,7 @@
             </span>
             {% for m in active_trial.get_required_modalities() %}
             <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950/60 text-cyan-400 border border-cyan-800/60">
-              Req: {{ m }}
+              Req: {{ modality_display_names.get(m.upper(), m) }}
             </span>
             {% endfor %}
           </div>
@@ -281,19 +281,19 @@
           <div class="grid grid-cols-3 gap-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-xs">
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CR" checked class="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CR (X-Ray)</span>
+              <span class="font-mono">X-Ray (CR)</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CT" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CT</span>
+              <span class="font-mono">CT Scan</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="MR" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">MR (MRI)</span>
+              <span class="font-mono">MRI</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="DX" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">DX (Digital)</span>
+              <span class="font-mono">Digital X-Ray</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="SR" class="rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
@@ -347,6 +347,9 @@
       </div>
     </form>
     {% endif %}
+  </div>
+</div>
+
 <!-- Edit Clinical Trial Modal -->
 <div id="editTrialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
   <div class="glass-panel w-full max-w-lg p-6 rounded-2xl border border-amber-500/30 shadow-2xl relative bg-slate-950/95 backdrop-blur-xl">
@@ -388,19 +391,19 @@
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CR" id="edit_mod_CR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CR (X-Ray)</span>
+              <span class="font-mono">X-Ray (CR)</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="CT" id="edit_mod_CT" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">CT (Computed)</span>
+              <span class="font-mono">CT Scan</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="MR" id="edit_mod_MR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">MR (MRI)</span>
+              <span class="font-mono">MRI</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="DX" id="edit_mod_DX" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">
-              <span class="font-mono">DX (Digital)</span>
+              <span class="font-mono">Digital X-Ray</span>
             </label>
             <label class="flex items-center space-x-2 text-slate-300 cursor-pointer hover:text-white">
               <input type="checkbox" name="required_modalities" value="SR" id="edit_mod_SR" class="edit-mod-cb rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-800">

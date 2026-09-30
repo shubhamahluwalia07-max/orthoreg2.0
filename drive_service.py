@@ -20,21 +20,41 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 DEFAULT_DRIVE_FOLDER_ID = "1eEnoJi0hYHgrPmtWJub0fA6W_oPOL2iR"
 
 
+def extract_strict_12digit_cr(*values):
+    r"""Search PatientName, PatientID, filepath, and candidate strings for a strict 12-digit CR number starting with 19 or 20 (e.g. 201806126956)."""
+    for c in values:
+        if not c:
+            continue
+        s = str(c).strip()
+        # Direct 12-digit number starting with 19xx or 20xx
+        m = re.search(r'\b((?:19|20)\d{10})\b', s)
+        if m:
+            return m.group(1)
+        # CR-prefixed 12-digit number e.g. CR201806126956 or CR-201806126956
+        m_cr = re.search(r'\bCR[ -]?((?:19|20)\d{10})\b', s, flags=re.IGNORECASE)
+        if m_cr:
+            return m_cr.group(1)
+    return None
+
+
 def extract_cr_number(patient_id_val, patient_name_val, fallback_uid='', filepath=''):
-    r"""Extract clinical Central Registration (CR) number using regex cascades.
-    Handles formats like:
-      - CR123456, CR-2024-0012, CR 987654
-      - UHID12345, UHID-9988
-      - Embedded CR numbers in PatientName: 'DOE^JOHN CR102938' or '102938_DOE'
-      - Plain numeric sequence (4-12 digits)
-      - Embedded in folder or file path: 'D:\RADIOLOGY DATA\CR102938\...'
+    r"""Extract clinical Central Registration (CR) number using strict 12-digit regex first,
+    falling back to standard clinical cascades.
+    The true CR number is strictly defined as a 12-digit sequence starting with a 4-digit year (e.g., regex \b(?:19|20)\d{10}\b).
     """
     id_str = str(patient_id_val).strip() if patient_id_val else ''
     name_str = str(patient_name_val).strip() if patient_name_val else ''
+    fb_str = str(fallback_uid).strip() if fallback_uid else ''
     path_str = str(filepath).strip() if filepath else ''
+
+    # 1. Strict 12-digit CR starting with 19xx/20xx in PatientID, PatientName, filepath, or fallback_uid
+    strict_cr = extract_strict_12digit_cr(id_str, name_str, path_str, fb_str)
+    if strict_cr:
+        return strict_cr
+
     combined = f"{id_str} {name_str} {path_str}"
 
-    # 1. Match explicit CR or UHID pattern
+    # 2. Match explicit CR or UHID pattern
     m = re.search(r'\b(CR[ -]?[0-9]{4,12})\b', combined, re.IGNORECASE)
     if m:
         return re.sub(r'[\s-]', '', m.group(1)).upper()
@@ -43,19 +63,19 @@ def extract_cr_number(patient_id_val, patient_name_val, fallback_uid='', filepat
     if m_uhid:
         return re.sub(r'[\s-]', '', m_uhid.group(1)).upper()
 
-    # 2. If PatientID is purely numeric or contains digits
+    # 3. If PatientID is purely numeric or contains digits
     if id_str:
         if id_str.isdigit() and len(id_str) >= 4:
             return f"CR{id_str}"
         if re.match(r'^[A-Z0-9_\-]{4,20}$', id_str, re.IGNORECASE):
             return id_str.upper()
 
-    # 3. Search for 5-10 digit numbers in the combined string
+    # 4. Search for 5-10 digit numbers in the combined string
     m_num = re.search(r'\b([0-9]{5,10})\b', combined)
     if m_num:
         return f"CR{m_num.group(1)}"
 
-    # 4. Fallback: use id_str if available, or generate a deterministic anon ID
+    # 5. Fallback: use id_str if available, or generate a deterministic anon ID
     if id_str and id_str.lower() not in ('unknown', 'anonymous', 'none'):
         clean_id = re.sub(r'[^A-Z0-9]', '', id_str.upper())
         if clean_id:
@@ -67,12 +87,14 @@ def extract_cr_number(patient_id_val, patient_name_val, fallback_uid='', filepat
 
 def clean_patient_name(raw_name, fallback=''):
     """Convert DICOM PersonName (e.g. 'DOE^JOHN^^DR' or 'SHARMA^RAJESH') into readable format ('JOHN DOE' or 'RAJESH SHARMA').
+    Strictly strips embedded 12-digit CR numbers, CR/UHID codes, and extraneous digits.
     Guarantees non-blank return value.
     """
     if not raw_name:
         if fallback:
             # Clean fallback from folder/file name
             fb = re.sub(r'[_^]+', ' ', str(fallback)).strip()
+            fb = re.sub(r'(?:CR[ -]?)?\b(?:19|20)\d{10}\b', '', fb, flags=re.IGNORECASE).strip()
             fb = re.sub(r'\b(CR|UHID)[ -]?[0-9]{4,12}\b', '', fb, flags=re.IGNORECASE).strip()
             if fb:
                 return fb.title()
@@ -82,6 +104,8 @@ def clean_patient_name(raw_name, fallback=''):
     if not s or s.lower() in ('none', 'null', 'nan', '""', "''"):
         return 'Anonymous'
 
+    # Strip embedded 12-digit CR numbers entirely out of the remaining PatientName string
+    s = re.sub(r'(?:CR[ -]?)?\b(?:19|20)\d{10}\b', '', s, flags=re.IGNORECASE).strip()
     # Strip embedded CR/UHID codes from patient name for clean display
     s = re.sub(r'\b(CR|UHID)[ -]?[0-9]{4,12}\b', '', s, flags=re.IGNORECASE).strip()
     # Strip trailing numeric IDs

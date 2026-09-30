@@ -117,6 +117,42 @@ def ensure_schema_migrations(db):
                 if 'instance_files' not in cols:
                     conn.exec_driver_sql("ALTER TABLE scans ADD COLUMN instance_files TEXT")
 
+            if 'patients' in tables:
+                pcols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(patients)").fetchall()}
+                if 'diagnosis' not in pcols:
+                    conn.exec_driver_sql("ALTER TABLE patients ADD COLUMN diagnosis TEXT")
+                if 'ao_trauma_score' not in pcols:
+                    conn.exec_driver_sql("ALTER TABLE patients ADD COLUMN ao_trauma_score VARCHAR(64)")
+                if 'ao_grade' not in pcols:
+                    conn.exec_driver_sql("ALTER TABLE patients ADD COLUMN ao_grade VARCHAR(64)")
+                    if 'ao_trauma_score' in pcols:
+                        conn.exec_driver_sql("UPDATE patients SET ao_grade = ao_trauma_score WHERE ao_grade IS NULL")
+                if 'anatomy' not in pcols:
+                    conn.exec_driver_sql("ALTER TABLE patients ADD COLUMN anatomy VARCHAR(128)")
+                if 'scanogram' not in pcols:
+                    conn.exec_driver_sql("ALTER TABLE patients ADD COLUMN scanogram VARCHAR(64) DEFAULT 'No'")
+
+            if 'users' in tables:
+                ucols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(users)").fetchall()}
+                if 'email' not in ucols:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN email VARCHAR(120)")
+                    conn.exec_driver_sql("UPDATE users SET email = username || '@orthoreg.org' WHERE email IS NULL")
+                if 'name' not in ucols:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN name VARCHAR(120)")
+                if 'status' not in ucols:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'Active'")
+                    conn.exec_driver_sql("UPDATE users SET status = 'Active' WHERE status IS NULL")
+                if 'approved_at' not in ucols:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN approved_at DATETIME")
+                if 'must_change_password' not in ucols:
+                    conn.exec_driver_sql("ALTER TABLE users ADD COLUMN must_change_password BOOLEAN DEFAULT 0")
+
+                conn.exec_driver_sql("UPDATE users SET status = 'Active' WHERE status IS NULL")
+                conn.exec_driver_sql("UPDATE users SET must_change_password = 0 WHERE must_change_password IS NULL")
+                conn.exec_driver_sql("UPDATE users SET role = 'User' WHERE role IS NULL")
+                conn.exec_driver_sql("UPDATE users SET email = username || '@orthoreg.org' WHERE email IS NULL AND username IS NOT NULL")
+                conn.exec_driver_sql("UPDATE users SET username = email WHERE username IS NULL AND email IS NOT NULL")
+
             if 'trials' in tables:
                 tcols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(trials)").fetchall()}
                 if 'target_sample_size' not in tcols:
@@ -163,103 +199,81 @@ def seed_database_and_samples(app, db, models):
             db.create_all()
             ensure_schema_migrations(db)
 
-        # 1. Seed Users (Admin/PI vs Viewer)
-        if not User.query.filter_by(username='admin').first():
-            admin = User(username='admin', role='Admin')
+        # 1. Seed Dynamic RBAC Users (Admin, Editor, User) & Pending Requests
+        admin = User.query.filter((User.username == 'admin') | (User.email == 'admin@orthoreg.org')).first()
+        if not admin:
+            admin = User(
+                email='admin@orthoreg.org',
+                username='admin',
+                name='Chief PI / Administrator',
+                role='Admin',
+                status='Active'
+            )
             admin.set_password('admin123')
             db.session.add(admin)
+        else:
+            admin.role = 'Admin'
+            admin.status = 'Active'
+            if not admin.email:
+                admin.email = 'admin@orthoreg.org'
+            admin.set_password('admin123')
 
-        if not User.query.filter_by(username='viewer').first():
-            viewer = User(username='viewer', role='Viewer')
+        editor = User.query.filter((User.username == 'editor') | (User.email == 'editor@orthoreg.org')).first()
+        if not editor:
+            editor = User(
+                email='editor@orthoreg.org',
+                username='editor',
+                name='Clinical Research Editor',
+                role='Editor',
+                status='Active'
+            )
+            editor.set_password('editor123')
+            db.session.add(editor)
+        else:
+            editor.role = 'Editor'
+            editor.status = 'Active'
+            if not editor.email:
+                editor.email = 'editor@orthoreg.org'
+
+        viewer = User.query.filter((User.username == 'viewer') | (User.email == 'viewer@orthoreg.org')).first()
+        if not viewer:
+            viewer = User(
+                email='viewer@orthoreg.org',
+                username='viewer',
+                name='Clinical Radiology Viewer',
+                role='User',
+                status='Active'
+            )
             viewer.set_password('viewer123')
             db.session.add(viewer)
-
-        # 2. Seed Trials with EDC Schemas and Modality Constraints
-        trial_tka = Trial.query.filter_by(trial_name='TOTAL-KNEE-2026').first()
-        if not trial_tka:
-            trial_tka = Trial(
-                trial_name='TOTAL-KNEE-2026',
-                description='Prospective multicenter registry evaluating cementless total knee arthroplasty alignment and implant longevity.',
-                target_sample_size=60
-            )
-            trial_tka.set_required_modalities(['DX', 'CR', 'CT'])
-            trial_tka.set_data_schema([
-                {'name': 'Kellgren-Lawrence Grade', 'type': 'Text'},
-                {'name': 'Pre-Op Knee Society Score (KSS)', 'type': 'Number'},
-                {'name': 'Surgery Date', 'type': 'Date'},
-                {'name': 'Implant Specifications Sheet', 'type': 'File'}
-            ])
-            db.session.add(trial_tka)
         else:
-            if not trial_tka.target_sample_size:
-                trial_tka.target_sample_size = 60
-            if not trial_tka.get_required_modalities():
-                trial_tka.set_required_modalities(['DX', 'CR', 'CT'])
-            if not trial_tka.get_data_schema():
-                trial_tka.set_data_schema([
-                    {'name': 'Kellgren-Lawrence Grade', 'type': 'Text'},
-                    {'name': 'Pre-Op Knee Society Score (KSS)', 'type': 'Number'},
-                    {'name': 'Surgery Date', 'type': 'Date'},
-                    {'name': 'Implant Specifications Sheet', 'type': 'File'}
-                ])
+            viewer.role = 'User'
+            viewer.status = 'Active'
+            if not viewer.email:
+                viewer.email = 'viewer@orthoreg.org'
 
-        trial_femur = Trial.query.filter_by(trial_name='DISTAL-FEMUR-FX').first()
-        if not trial_femur:
-            trial_femur = Trial(
-                trial_name='DISTAL-FEMUR-FX',
-                description='Comparative evaluation of dual-plating versus lateral locking plate in distal femoral fragility fractures.',
-                target_sample_size=40
+        # Seed a sample pending access request for demonstration in User Management panel
+        pending_user = User.query.filter_by(email='dr.patel@hospital.org').first()
+        if not pending_user:
+            pending_user = User(
+                email='dr.patel@hospital.org',
+                username='dr.patel@hospital.org',
+                name='Dr. Anita Patel',
+                role='User',
+                status='Pending'
             )
-            trial_femur.set_required_modalities(['CR', 'CT'])
-            trial_femur.set_data_schema([
-                {'name': 'Fracture AO/OTA Classification', 'type': 'Text'},
-                {'name': 'Bone Mineral Density T-Score', 'type': 'Number'},
-                {'name': 'Injury Date', 'type': 'Date'},
-                {'name': 'Post-Op X-Ray Report', 'type': 'File'}
-            ])
-            db.session.add(trial_femur)
-        else:
-            if not trial_femur.target_sample_size:
-                trial_femur.target_sample_size = 40
-            if not trial_femur.get_required_modalities():
-                trial_femur.set_required_modalities(['CR', 'CT'])
-            if not trial_femur.get_data_schema():
-                trial_femur.set_data_schema([
-                    {'name': 'Fracture AO/OTA Classification', 'type': 'Text'},
-                    {'name': 'Bone Mineral Density T-Score', 'type': 'Number'},
-                    {'name': 'Injury Date', 'type': 'Date'},
-                    {'name': 'Post-Op X-Ray Report', 'type': 'File'}
-                ])
+            pending_user.set_password('request123')
+            db.session.add(pending_user)
 
-        trial_spine = Trial.query.filter_by(trial_name='SCOLIOSIS-COBB-ALIGN').first()
-        if not trial_spine:
-            trial_spine = Trial(
-                trial_name='SCOLIOSIS-COBB-ALIGN',
-                description='Pre- and post-operative radiographic Cobb angle tracking in adolescent idiopathic scoliosis.',
-                target_sample_size=50
-            )
-            trial_spine.set_required_modalities(['CR', 'SR'])
-            trial_spine.set_data_schema([
-                {'name': 'Primary Curve Cobb Angle', 'type': 'Number'},
-                {'name': 'Risser Sign', 'type': 'Text'},
-                {'name': 'Radiographic Assessment Date', 'type': 'Date'},
-                {'name': 'Orthoroentgenogram Analysis File', 'type': 'File'}
-            ])
-            db.session.add(trial_spine)
-        else:
-            if not trial_spine.target_sample_size:
-                trial_spine.target_sample_size = 50
-            if not trial_spine.get_required_modalities():
-                trial_spine.set_required_modalities(['CR', 'SR'])
-            if not trial_spine.get_data_schema():
-                trial_spine.set_data_schema([
-                    {'name': 'Primary Curve Cobb Angle', 'type': 'Number'},
-                    {'name': 'Risser Sign', 'type': 'Text'},
-                    {'name': 'Radiographic Assessment Date', 'type': 'Date'},
-                    {'name': 'Orthoroentgenogram Analysis File', 'type': 'File'}
-                ])
-
-        db.session.commit()
+        # 2. Halt Mock Data Injection: The trial registry must remain strictly empty until manually populated by the research team.
+        # Clean up any previously seeded mock trials from older versions
+        dummy_trial_names = ['TOTAL-KNEE-2026', 'DISTAL-FEMUR-FX', 'SCOLIOSIS-COBB-ALIGN']
+        existing_dummy_trials = Trial.query.filter(Trial.trial_name.in_(dummy_trial_names)).all()
+        for dt in existing_dummy_trials:
+            dt.patients = []
+            db.session.delete(dt)
+        if existing_dummy_trials:
+            db.session.commit()
 
         # 3. Create Sample Synthetic DICOMs in sample_dicoms/ folder if not yet created
         sample_dir = os.path.join(app.root_path, 'sample_dicoms')
@@ -276,7 +290,10 @@ def seed_database_and_samples(app, db, models):
                 'date': '20260814',
                 'desc': 'Right Femur AP/Lateral Radiograph',
                 'pattern': 'bone',
-                'trial': trial_femur,
+                'trial': None,
+                'diagnosis': 'Distal Femur Extra-Articular Fracture',
+                'ao_score': '33-A2',
+                'anatomy': 'Distal Femur',
                 'custom': [('Fracture AO/OTA Classification', 'text', '33-A2 Simple Extra-articular'),
                            ('Post-Op X-Ray Report', 'link', 'https://radiopaedia.org/articles/distal-femoral-fracture')]
             },
@@ -290,7 +307,10 @@ def seed_database_and_samples(app, db, models):
                 'date': '20260901',
                 'desc': 'Left Knee Weight-Bearing AP View',
                 'pattern': 'joint',
-                'trial': trial_tka,
+                'trial': None,
+                'diagnosis': 'Bilateral Knee Tricompartmental Osteoarthritis',
+                'ao_score': 'N/A (Degenerative)',
+                'anatomy': 'Knee Joint',
                 'custom': [('Kellgren-Lawrence Grade', 'text', 'Grade 4 (Severe OA)'),
                            ('Pre-op Knee Society Score (KSS)', 'text', '42 / 100')]
             },
@@ -304,7 +324,10 @@ def seed_database_and_samples(app, db, models):
                 'date': '20260910',
                 'desc': 'Full Spine Standing Orthoroentgenogram',
                 'pattern': 'spine',
-                'trial': trial_spine,
+                'trial': None,
+                'diagnosis': 'Adolescent Idiopathic Scoliosis',
+                'ao_score': 'N/A (Deformity)',
+                'anatomy': 'Thoracolumbar Spine',
                 'custom': [('Primary Curve Cobb Angle', 'text', '38.4 degrees Thoracic Right'),
                            ('Risser Sign', 'text', 'Stage 3')]
             },
@@ -318,7 +341,10 @@ def seed_database_and_samples(app, db, models):
                 'date': '20260918',
                 'desc': 'Pelvis with Both Hips AP View',
                 'pattern': 'bone',
-                'trial': trial_femur,
+                'trial': None,
+                'diagnosis': 'Displaced Subcapital Femoral Neck Fracture',
+                'ao_score': '31-B2',
+                'anatomy': 'Proximal Femur / Hip',
                 'custom': [('Bone Mineral Density T-Score', 'text', '-3.1 (Severe Osteoporosis)')]
             }
         ]
@@ -346,12 +372,22 @@ def seed_database_and_samples(app, db, models):
                     cr_number=s['cr'],
                     patient_name=clean_patient_name(s['name']),
                     age=clean_age(s['age']),
-                    gender=s['sex']
+                    gender=s['sex'],
+                    diagnosis=s.get('diagnosis'),
+                    ao_trauma_score=s.get('ao_score'),
+                    anatomy=s.get('anatomy')
                 )
                 if s.get('trial') and s['trial'] not in p.trials:
                     p.trials.append(s['trial'])
                 db.session.add(p)
                 db.session.flush()
+            else:
+                if not p.diagnosis and s.get('diagnosis'):
+                    p.diagnosis = s['diagnosis']
+                if not p.ao_trauma_score and s.get('ao_score'):
+                    p.ao_trauma_score = s['ao_score']
+                if not p.anatomy and s.get('anatomy'):
+                    p.anatomy = s['anatomy']
 
             # Check if scan exists
             sc = Scan.query.filter_by(cr_number=p.cr_number, file_name=s['file']).first()
