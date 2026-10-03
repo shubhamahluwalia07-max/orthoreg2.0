@@ -4,32 +4,32 @@
 
 {% block content %}
 <div class="min-h-[80vh] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border max-w-xl w-full p-8 sm:p-10 border border-gray-100">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border max-w-xl w-full p-8 sm:p-10 border border-gray-100 dark:border-slate-700">
 
     <!-- Header & Portal Title -->
     <div class="text-center relative">
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tl from-purple-700 to-pink-500 shadow-soft-2xl mb-4 text-white text-2xl">
         <i class="fa-solid fa-bone"></i>
       </div>
-      <h2 class="text-2xl font-bold tracking-tight text-slate-800 flex items-center justify-center gap-2 mb-1">
+      <h2 class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white flex items-center justify-center gap-2 mb-1">
         Clinical Radiology Portal
-        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-bold">
+        <span class="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold">
           RBAC v2
         </span>
       </h2>
-      <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto mb-6">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto mb-6">
         Sign in with authorized credentials or submit a formal access request for institutional IRB/clinical trial review.
       </p>
     </div>
 
     <!-- Dual Tab Switcher -->
-    <div class="flex items-center p-1 rounded-xl bg-gray-100 border border-gray-200 relative z-10 mb-6">
+    <div class="flex items-center p-1 rounded-xl bg-gray-100 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 relative z-10 mb-6">
       <button type="button" id="tabBtnSignIn" onclick="switchPortalTab('signin')"
-              class="flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 bg-white text-slate-700 shadow-soft-md">
-        <i class="fa-solid fa-right-to-bracket text-xs text-purple-600"></i> Sign In
+              class="flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-white shadow-soft-md dark:shadow-none">
+        <i class="fa-solid fa-right-to-bracket text-xs text-purple-600 dark:text-purple-400"></i> Sign In
       </button>
       <button type="button" id="tabBtnRequest" onclick="switchPortalTab('request')"
-              class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700">
+              class="flex-1 py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white">
         <i class="fa-solid fa-user-plus text-xs"></i> Request Access
       </button>
     </div>
@@ -37,19 +37,19 @@
     <!-- TAB 1: SIGN IN FORM -->
     <div id="sectionSignIn" class="space-y-4">
       <!-- Dynamic Error Banner -->
-      <div id="loginErrorMessage" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between shadow-soft-xs">
+      <div id="loginErrorMessage" class="hidden p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-xs flex items-center justify-between shadow-soft-xs">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-circle-exclamation text-rose-500"></i>
           <span id="loginErrorText" class="font-medium"></span>
         </div>
-        <button type="button" onclick="document.getElementById('loginErrorMessage').classList.add('hidden')" class="text-slate-400 hover:text-slate-700">
+        <button type="button" onclick="document.getElementById('loginErrorMessage').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
       <form id="signInForm" class="space-y-4" method="POST" action="{{ url_for('login') }}">
         <div>
-          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+          <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
             Email or Username
           </label>
           <div class="relative">
@@ -57,13 +57,13 @@
               <i class="fa-solid fa-user-doctor"></i>
             </div>
             <input id="username" name="username" type="text" required
-              class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 font-mono focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 font-mono focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="e.g. admin@orthoreg.org or admin">
           </div>
         </div>
 
         <div>
-          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">
+          <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
             Password
           </label>
           <div class="relative">
@@ -71,7 +71,7 @@
               <i class="fa-solid fa-lock"></i>
             </div>
             <input id="password" name="password" type="password" required
-              class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 font-mono focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2.5 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 font-mono focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="••••••••">
           </div>
         </div>
@@ -83,26 +83,26 @@
       </form>
 
       <!-- Quick Login Credentials helper -->
-      <div class="pt-4 border-t border-gray-100 text-[11px] text-slate-500">
+      <div class="pt-4 border-t border-gray-100 dark:border-slate-700 text-[11px] text-slate-500 dark:text-slate-400">
         <div class="flex items-center justify-between mb-2">
-          <span class="font-semibold text-slate-600 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-key text-purple-600 mr-1"></i> Quick Test Credentials</span>
+          <span class="font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider text-[10px]"><i class="fa-solid fa-key text-purple-600 dark:text-purple-400 mr-1"></i> Quick Test Credentials</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-left">
           <button type="button" onclick="fillCreds('admin', 'admin123')"
-            class="p-2.5 rounded-xl bg-gray-50 border border-gray-200 hover:border-purple-300 hover:bg-purple-50/40 transition-all text-left group">
+            class="p-2.5 rounded-xl bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-purple-50/40 dark:hover:bg-slate-700 transition-all text-left group">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-purple-700 text-xs">Admin / PI</span>
-              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-400 group-hover:text-purple-600"></i>
+              <span class="font-bold text-purple-700 dark:text-purple-400 text-xs">Admin / PI</span>
+              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400"></i>
             </div>
-            <div class="font-mono text-[10px] text-slate-500 mt-0.5">admin / admin123</div>
+            <div class="font-mono text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">admin / admin123</div>
           </button>
           <button type="button" onclick="fillCreds('viewer', 'viewer123')"
-            class="p-2.5 rounded-xl bg-gray-50 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40 transition-all text-left group">
+            class="p-2.5 rounded-xl bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:border-emerald-300 dark:hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-slate-700 transition-all text-left group">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-emerald-700 text-xs">Viewer</span>
-              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-400 group-hover:text-emerald-600"></i>
+              <span class="font-bold text-emerald-700 dark:text-emerald-400 text-xs">Viewer</span>
+              <i class="fa-solid fa-arrow-turn-down text-[10px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400"></i>
             </div>
-            <div class="font-mono text-[10px] text-slate-500 mt-0.5">viewer / viewer123</div>
+            <div class="font-mono text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">viewer / viewer123</div>
           </button>
         </div>
       </div>
@@ -110,11 +110,11 @@
 
     <!-- TAB 2: REQUEST ACCESS FORM -->
     <div id="sectionRequest" class="hidden space-y-4">
-      <div class="p-3.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 flex items-start gap-2.5">
-        <i class="fa-solid fa-shield-halved text-purple-600 mt-0.5"></i>
+      <div class="p-3.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 flex items-start gap-2.5">
+        <i class="fa-solid fa-shield-halved text-purple-600 dark:text-purple-400 mt-0.5"></i>
         <div>
           <span class="font-bold">IRB / HIPAA Verification:</span>
-          <p class="text-[11px] text-purple-800 mt-0.5 mb-0">
+          <p class="text-[11px] text-purple-800 dark:text-purple-300 mt-0.5 mb-0">
             External surgeons, radiologists, and research fellows must submit their institutional details. New accounts are initially set to <strong>Pending</strong> until an Administrator approves your credentials and assigns your role.
           </p>
         </div>
@@ -122,7 +122,7 @@
 
       <form class="space-y-3.5" method="POST" action="{{ url_for('request_access') }}">
         <div>
-          <label for="req_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          <label for="req_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
             Full Name <span class="text-rose-500">*</span>
           </label>
           <div class="relative">
@@ -130,13 +130,13 @@
               <i class="fa-solid fa-id-card"></i>
             </div>
             <input id="req_name" name="name" type="text" required
-              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="e.g. Dr. Sarah Jenkins, MD">
           </div>
         </div>
 
         <div>
-          <label for="req_email" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          <label for="req_email" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
             Institutional Email <span class="text-rose-500">*</span>
           </label>
           <div class="relative">
@@ -144,13 +144,13 @@
               <i class="fa-solid fa-envelope"></i>
             </div>
             <input id="req_email" name="email" type="email" required
-              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 font-mono focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 font-mono focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="s.jenkins@hospital.org">
           </div>
         </div>
 
         <div>
-          <label for="req_dept" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          <label for="req_dept" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
             Department / Affiliation
           </label>
           <div class="relative">
@@ -158,13 +158,13 @@
               <i class="fa-solid fa-hospital"></i>
             </div>
             <input id="req_dept" name="department" type="text"
-              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="e.g. Department of Orthopedic Surgery">
           </div>
         </div>
 
         <div>
-          <label for="req_password" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
+          <label for="req_password" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
             Choose Password <span class="text-rose-500">*</span>
           </label>
           <div class="relative">
@@ -172,7 +172,7 @@
               <i class="fa-solid fa-key"></i>
             </div>
             <input id="req_password" name="password" type="password" minlength="6" required
-              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 bg-white text-gray-700 text-xs placeholder:text-gray-400 font-mono focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all"
+              class="block w-full pl-10 pr-3 py-2 rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white text-xs placeholder:text-gray-400 dark:placeholder:text-slate-400 font-mono focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all"
               placeholder="Min. 6 characters">
           </div>
         </div>
@@ -185,11 +185,11 @@
     </div>
 
     <!-- Security & Compliance Footer Badges -->
-    <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-slate-400 mt-6">
-      <span class="flex items-center gap-1 text-slate-500">
+    <div class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-400 mt-6">
+      <span class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
         <i class="fa-solid fa-lock text-emerald-500"></i> HIPAA &amp; IRB Safe Mode
       </span>
-      <span class="font-mono text-slate-400">
+      <span class="font-mono text-slate-400 dark:text-slate-400">
         Cornerstone3D PACS Engine
       </span>
     </div>

@@ -105,6 +105,45 @@ body {
 
 /* Modal Backdrop */
 .modal-backdrop {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(4px);
+}
+
+/* Dark Mode Extensions for Soft UI Dashboard */
+.dark body {
+  background-color: #0f172a;
+  color: #cbd5e1;
+}
+
+.dark .glass-panel {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: none;
+  color: #f8fafc;
+}
+
+.dark .glass-panel-hover:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+}
+
+.dark .glass-input {
+  background: #334155;
+  border-color: #475569;
+  color: #ffffff;
+}
+
+.dark .glass-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }

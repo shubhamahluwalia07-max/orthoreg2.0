@@ -6,28 +6,28 @@
 <div class="w-full space-y-6">
 
   <!-- Header Card -->
-  <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border p-6 border border-gray-100">
+  <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border p-6 border border-gray-100 dark:border-slate-700">
     <div class="flex items-center space-x-3">
       <div class="w-12 h-12 rounded-xl bg-gradient-to-tl from-purple-700 to-pink-500 shadow-soft-md flex items-center justify-center text-white text-xl">
         <i class="fa-solid fa-hard-drive"></i>
       </div>
       <div>
-        <h2 class="text-xl font-bold text-slate-800 mb-0">Radiology Data Extraction &amp; Sync Console</h2>
-        <p class="text-xs text-slate-500 mt-0.5 mb-0">High-speed local filesystem indexing (Google Drive for Desktop mirror) &amp; SQLite metadata sync</p>
+        <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-0">Radiology Data Extraction &amp; Sync Console</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 mb-0">High-speed local filesystem indexing (Google Drive for Desktop mirror) &amp; SQLite metadata sync</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
       {% if is_local_available %}
-        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Local Mirror Detected
         </span>
       {% else %}
-        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1.5">
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-amber-500"></span> Local Path Not Found
         </span>
       {% endif %}
       {% if is_configured %}
-        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1.5">
+        <span class="px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1.5">
           <i class="fa-brands fa-google-drive text-xs"></i> API Ready
         </span>
       {% endif %}
@@ -35,25 +35,25 @@
   </div>
 
   <!-- Primary Option: Local Filesystem Crawler (Google Drive for Desktop) -->
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border p-6 border border-gray-100 space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 mb-0">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border p-6 border border-gray-100 dark:border-slate-700 space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700">
+      <h3 class="text-sm font-bold text-slate-700 dark:text-white uppercase tracking-wider flex items-center gap-2 mb-0">
         <i class="fa-solid fa-bolt-lightning text-amber-500"></i> Fast Local Directory Crawler (Recommended)
       </h3>
-      <span class="text-[11px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+      <span class="text-[11px] font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded">
         Zero Network Latency
       </span>
     </div>
-    <p class="text-xs text-slate-500 mb-0">
-      Since Google Drive for Desktop mirrors files locally, this engine bypasses remote API rate limits and network latency. It performs a recursive <code class="text-purple-600 font-mono font-semibold">os.walk()</code>, extracting clinical metadata via <code class="text-purple-600 font-mono font-semibold">pydicom.dcmread(stop_before_pixels=True)</code> in milliseconds and saving the local file path directly into SQLite.
+    <p class="text-xs text-slate-500 dark:text-slate-300 mb-0">
+      Since Google Drive for Desktop mirrors files locally, this engine bypasses remote API rate limits and network latency. It performs a recursive <code class="text-purple-600 dark:text-purple-400 font-mono font-semibold">os.walk()</code>, extracting clinical metadata via <code class="text-purple-600 dark:text-purple-400 font-mono font-semibold">pydicom.dcmread(stop_before_pixels=True)</code> in milliseconds and saving the local file path directly into SQLite.
     </p>
 
     <form method="POST" action="{{ url_for('drive_sync') }}" class="space-y-4 pt-2">
       <div>
         <div class="flex items-center justify-between mb-1.5">
-          <label class="block text-xs font-semibold text-slate-700">Local Directory Path</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Local Directory Path</label>
           <button type="button" onclick="document.getElementById('local_path_input').value = '{{ local_drive_path }}'"
-            class="text-[11px] font-mono text-purple-600 hover:text-purple-700 underline flex items-center gap-1">
+            class="text-[11px] font-mono text-purple-600 dark:text-purple-400 hover:text-purple-700 underline flex items-center gap-1">
             <i class="fa-solid fa-rotate-left text-[10px]"></i> Reset to Default
           </button>
         </div>
@@ -64,19 +64,19 @@
           <input type="text" id="local_path_input" name="target_path" required
             value="{{ local_drive_path }}"
             placeholder="e.g. D:\RADIOLOGY DATA"
-            class="w-full pl-10 pr-3 py-2.5 text-xs font-mono rounded-lg border border-solid border-gray-300 bg-white text-gray-700 placeholder:text-gray-400 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+            class="w-full pl-10 pr-3 py-2.5 text-xs font-mono rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1">
-          <span>Targeting mirrored Google Drive directory: <strong class="text-slate-700 font-mono">{{ local_drive_path }}</strong></span>
-          <span class="font-mono font-semibold {% if is_local_available %}text-emerald-600{% else %}text-amber-600{% endif %}">
+        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          <span>Targeting mirrored Google Drive directory: <strong class="text-slate-700 dark:text-slate-200 font-mono">{{ local_drive_path }}</strong></span>
+          <span class="font-mono font-semibold {% if is_local_available %}text-emerald-600 dark:text-emerald-400{% else %}text-amber-600 dark:text-amber-400{% endif %}">
             Status: {% if is_local_available %}Ready &amp; Accessible{% else %}Path not found{% endif %}
           </span>
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-        <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-info text-purple-600"></i>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info text-purple-600 dark:text-purple-400"></i>
           Runs asynchronously in background thread without freezing web server.
         </div>
         <button type="submit"
@@ -88,25 +88,25 @@
   </div>
 
   <!-- Secondary Option: Remote Google Drive API Crawler (Fallback) -->
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border p-6 border border-gray-100 space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-      <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 mb-0">
-        <i class="fa-brands fa-google-drive text-emerald-600"></i> Remote Google Drive API Crawler (Cloud Fallback)
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border p-6 border border-gray-100 dark:border-slate-700 space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700">
+      <h3 class="text-sm font-bold text-slate-700 dark:text-white uppercase tracking-wider flex items-center gap-2 mb-0">
+        <i class="fa-brands fa-google-drive text-emerald-600 dark:text-emerald-400"></i> Remote Google Drive API Crawler (Cloud Fallback)
       </h3>
-      <span class="text-[11px] font-mono text-slate-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded font-semibold">
+      <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 px-2 py-0.5 rounded font-semibold">
         API Ingestion
       </span>
     </div>
-    <p class="text-xs text-slate-500 mb-0">
-      Use this method if accessing an external Google Drive folder not mounted on the local filesystem. Requires valid OAuth <code class="text-slate-700 font-mono font-semibold">credentials.json</code>.
+    <p class="text-xs text-slate-500 dark:text-slate-300 mb-0">
+      Use this method if accessing an external Google Drive folder not mounted on the local filesystem. Requires valid OAuth <code class="text-slate-700 dark:text-slate-200 font-mono font-semibold">credentials.json</code>.
     </p>
 
     <form method="POST" action="{{ url_for('drive_sync') }}" class="space-y-4 pt-2">
       <div>
         <div class="flex items-center justify-between mb-1.5">
-          <label class="block text-xs font-semibold text-slate-700">Target Google Drive Folder ID</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300">Target Google Drive Folder ID</label>
           <button type="button" onclick="document.getElementById('folder_id_input').value = '{{ default_drive_folder_id }}'"
-            class="text-[11px] font-mono text-purple-600 hover:text-purple-700 underline flex items-center gap-1">
+            class="text-[11px] font-mono text-purple-600 dark:text-purple-400 hover:text-purple-700 underline flex items-center gap-1">
             <i class="fa-solid fa-rotate-left text-[10px]"></i> Use Master Folder ID
           </button>
         </div>
@@ -117,51 +117,51 @@
           <input type="text" id="folder_id_input" name="target_path" required
             value="{{ default_drive_folder_id }}"
             placeholder="e.g. 1eEnoJi0hYHgrPmtWJub0fA6W_oPOL2iR"
-            class="w-full pl-10 pr-3 py-2.5 text-xs font-mono rounded-lg border border-solid border-gray-300 bg-white text-gray-700 placeholder:text-gray-400 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+            class="w-full pl-10 pr-3 py-2.5 text-xs font-mono rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
-        <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-1">
           <span>Found in Drive URL: drive.google.com/drive/folders/<strong>[FOLDER_ID]</strong></span>
-          <span class="font-mono text-slate-500">Master: <code class="text-purple-600 font-semibold">{{ default_drive_folder_id }}</code></span>
+          <span class="font-mono text-slate-500 dark:text-slate-400">Master: <code class="text-purple-600 dark:text-purple-400 font-semibold">{{ default_drive_folder_id }}</code></span>
         </div>
       </div>
 
       <div class="flex items-center justify-end">
         <button type="submit"
-          class="px-5 py-2.5 font-bold text-center text-slate-700 uppercase align-middle transition-all bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg cursor-pointer leading-pro text-xs flex items-center">
-          <i class="fa-solid fa-cloud mr-2 text-purple-600"></i> Trigger Remote API Sync
+          class="px-5 py-2.5 font-bold text-center text-slate-700 dark:text-white uppercase align-middle transition-all bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 border border-gray-200 dark:border-slate-600 rounded-lg cursor-pointer leading-pro text-xs flex items-center">
+          <i class="fa-solid fa-cloud mr-2 text-purple-600 dark:text-purple-400"></i> Trigger Remote API Sync
         </button>
       </div>
     </form>
   </div>
 
   <!-- Real-time Crawler Status Card -->
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border p-6 border border-gray-100 space-y-3">
-    <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-0">
-      <i class="fa-solid fa-chart-line text-purple-600"></i> Background Sync Engine Telemetry
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border p-6 border border-gray-100 dark:border-slate-700 space-y-3">
+    <h3 class="text-sm font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
+      <i class="fa-solid fa-chart-line text-purple-600 dark:text-purple-400"></i> Background Sync Engine Telemetry
     </h3>
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-      <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-100 text-center shadow-soft-xxs">
-        <p class="text-xs text-slate-400 font-mono font-semibold mb-0">Engine Status</p>
-        <h4 class="text-sm font-bold font-mono mt-1 mb-0 {% if crawler.is_running %}text-amber-500 animate-pulse{% else %}text-emerald-600{% endif %}">
+      <div class="bg-gray-50/80 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-100 dark:border-slate-600 text-center shadow-soft-xxs">
+        <p class="text-xs text-slate-400 dark:text-slate-400 font-mono font-semibold mb-0">Engine Status</p>
+        <h4 class="text-sm font-bold font-mono mt-1 mb-0 {% if crawler.is_running %}text-amber-500 animate-pulse{% else %}text-emerald-600 dark:text-emerald-400{% endif %}">
           {% if crawler.is_running %}RUNNING{% else %}IDLE / READY{% endif %}
         </h4>
       </div>
-      <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-100 text-center shadow-soft-xxs">
-        <p class="text-xs text-slate-400 font-mono font-semibold mb-0">Total Files Ingested</p>
-        <h4 class="text-xl font-bold text-emerald-600 font-mono mt-1 mb-0">{{ crawler.ingested or 0 }}</h4>
+      <div class="bg-gray-50/80 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-100 dark:border-slate-600 text-center shadow-soft-xxs">
+        <p class="text-xs text-slate-400 dark:text-slate-400 font-mono font-semibold mb-0">Total Files Ingested</p>
+        <h4 class="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-1 mb-0">{{ crawler.ingested or 0 }}</h4>
       </div>
-      <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-100 text-center shadow-soft-xxs">
-        <p class="text-xs text-slate-400 font-mono font-semibold mb-0">Files Skipped (Duplicate)</p>
-        <h4 class="text-xl font-bold text-slate-600 font-mono mt-1 mb-0">{{ crawler.skipped or 0 }}</h4>
+      <div class="bg-gray-50/80 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-100 dark:border-slate-600 text-center shadow-soft-xxs">
+        <p class="text-xs text-slate-400 dark:text-slate-400 font-mono font-semibold mb-0">Files Skipped (Duplicate)</p>
+        <h4 class="text-xl font-bold text-slate-600 dark:text-slate-300 font-mono mt-1 mb-0">{{ crawler.skipped or 0 }}</h4>
       </div>
-      <div class="bg-gray-50/80 p-4 rounded-xl border border-gray-100 text-center shadow-soft-xxs">
-        <p class="text-xs text-slate-400 font-mono font-semibold mb-0">Directories Traversed</p>
-        <h4 class="text-xl font-bold text-purple-600 font-mono mt-1 mb-0">{{ crawler.folders_scanned or 0 }}</h4>
+      <div class="bg-gray-50/80 dark:bg-slate-700/50 p-4 rounded-xl border border-gray-100 dark:border-slate-600 text-center shadow-soft-xxs">
+        <p class="text-xs text-slate-400 dark:text-slate-400 font-mono font-semibold mb-0">Directories Traversed</p>
+        <h4 class="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono mt-1 mb-0">{{ crawler.folders_scanned or 0 }}</h4>
       </div>
     </div>
     {% if crawler.current_folder %}
-    <p class="text-[11px] font-mono text-slate-500 pt-1 mb-0">
-      Active Target: <span class="text-purple-700 font-bold">{{ crawler.current_folder }}</span>
+    <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-1 mb-0">
+      Active Target: <span class="text-purple-700 dark:text-purple-400 font-bold">{{ crawler.current_folder }}</span>
     </p>
     {% endif %}
   </div>

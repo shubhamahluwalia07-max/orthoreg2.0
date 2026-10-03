@@ -21,6 +21,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -40,6 +41,20 @@
     }
   </script>
 
+  <!-- Sitewide Dark Mode State Management Script -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
+
   <!-- Soft UI Dashboard Tailwind CSS -->
   <link href="{{ url_for('static', filename='css/soft-ui-dashboard-tailwind.css') }}" rel="stylesheet" />
   <!-- Supplemental Styles -->
@@ -47,29 +62,29 @@
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="m-0 font-sans antialiased font-normal text-size-base leading-default bg-gray-50 text-slate-500 min-h-screen">
+<body class="m-0 font-sans antialiased font-normal text-size-base leading-default bg-gray-50 dark:bg-slate-900 text-slate-500 dark:text-slate-300 min-h-screen transition-colors duration-200">
 
   {% if current_user.is_authenticated %}
   <!-- =========================================================
        Soft UI Dashboard Sidenav (Sidebar for Authenticated Users)
        ========================================================= -->
-  <aside class="max-w-62.5 ease-nav-brand z-990 fixed inset-y-0 my-4 ml-4 block w-full -translate-x-full flex-wrap items-center justify-between overflow-y-auto rounded-2xl border-0 bg-white p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0 xl:bg-transparent" id="sidenav-main">
+  <aside class="max-w-62.5 ease-nav-brand z-990 fixed inset-y-0 my-4 ml-4 block w-full -translate-x-full flex-wrap items-center justify-between overflow-y-auto rounded-2xl border-0 bg-white dark:bg-slate-800 p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0 xl:bg-transparent xl:dark:bg-transparent" id="sidenav-main">
     <div class="h-19.5">
       <i class="absolute top-0 right-0 hidden p-4 opacity-50 cursor-pointer fas fa-times text-slate-400 xl:hidden" sidenav-close></i>
-      <a class="block px-8 py-6 m-0 text-sm whitespace-nowrap text-slate-700" href="{{ url_for('dashboard') }}">
+      <a class="block px-8 py-6 m-0 text-sm whitespace-nowrap text-slate-700 dark:text-white" href="{{ url_for('dashboard') }}">
         <img src="{{ url_for('static', filename='img/logo-ct.png') }}" class="inline h-full max-w-full transition-all duration-200 ease-nav-brand max-h-8" alt="main_logo" />
         <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">ORTHOREG</span>
       </a>
     </div>
 
-    <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent" />
+    <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 dark:via-white/40 to-transparent" />
 
     <div class="items-center block w-auto max-h-screen overflow-auto h-sidenav grow basis-full">
       <ul class="flex flex-col pl-0 mb-0">
         <!-- Patient Registry -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'dashboard' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('dashboard') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'dashboard' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'dashboard' %}shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-white{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60{% endif %}" href="{{ url_for('dashboard') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'dashboard' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
               <i class="fa-solid fa-table-cells text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Patient Registry</span>
@@ -78,8 +93,8 @@
 
         <!-- Curate Trials -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('trials_view') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-white{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60{% endif %}" href="{{ url_for('trials_view') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
               <i class="fa-solid fa-vial-circle-check text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Curate Trials</span>
@@ -88,13 +103,13 @@
 
         {% if current_user.is_admin %}
         <li class="w-full mt-4">
-          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400">Administration</h6>
+          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400 dark:text-slate-400">Administration</h6>
         </li>
 
         <!-- User Access -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'admin_users' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('admin_users') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'admin_users' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'admin_users' %}shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-white{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60{% endif %}" href="{{ url_for('admin_users') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'admin_users' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
               <i class="fa-solid fa-users-gear text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">User Access</span>
@@ -103,8 +118,8 @@
 
         <!-- Drive Sync -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'drive_sync' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('drive_sync') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'drive_sync' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'drive_sync' %}shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-white{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60{% endif %}" href="{{ url_for('drive_sync') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'drive_sync' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
               <i class="fa-brands fa-google-drive text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Drive Sync</span>
@@ -113,13 +128,13 @@
         {% endif %}
 
         <li class="w-full mt-4">
-          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400">Account</h6>
+          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400 dark:text-slate-400">Account</h6>
         </li>
 
         <!-- Password Settings -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'change_password' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('change_password') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'change_password' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'change_password' %}shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold text-slate-700 dark:text-white{% else %}text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60{% endif %}" href="{{ url_for('change_password') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'change_password' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300{% endif %}">
               <i class="fa-solid fa-key text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Change Password</span>
@@ -128,8 +143,8 @@
 
         <!-- Log Out -->
         <li class="mt-0.5 w-full">
-          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors text-rose-500 hover:bg-rose-50 rounded-lg font-semibold" href="{{ url_for('logout') }}">
-            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-rose-500 bg-center stroke-0 text-center xl:p-2.5">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg font-semibold" href="{{ url_for('logout') }}">
+            <div class="shadow-soft-2xl dark:shadow-none mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-rose-500 bg-center stroke-0 text-center xl:p-2.5">
               <i class="fa-solid fa-right-from-bracket text-xs"></i>
             </div>
             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Log Out</span>
@@ -140,15 +155,15 @@
 
     <!-- Soft UI Bottom Documentation Card -->
     <div class="mx-4 mt-auto mb-4">
-      <div class="after:opacity-65 after:bg-gradient-to-tl after:from-slate-600 after:to-slate-300 relative flex min-w-0 flex-col items-center break-words rounded-2xl border-0 border-solid bg-white bg-clip-border shadow-none after:absolute after:top-0 after:bottom-0 after:left-0 after:z-10 after:block after:h-full after:w-full after:rounded-2xl after:content-['']" sidenav-card>
+      <div class="after:opacity-65 after:bg-gradient-to-tl after:from-slate-600 after:to-slate-300 relative flex min-w-0 flex-col items-center break-words rounded-2xl border-0 border-solid bg-white dark:bg-slate-800 bg-clip-border shadow-none after:absolute after:top-0 after:bottom-0 after:left-0 after:z-10 after:block after:h-full after:w-full after:rounded-2xl after:content-['']" sidenav-card>
         <div class="relative z-20 flex-auto w-full p-4 text-left text-white">
-          <div class="flex items-center justify-center w-8 h-8 mb-4 text-center bg-white bg-center rounded-lg icon shadow-soft-2xl text-slate-700">
-            <i class="fa-solid fa-shield-halved text-slate-700 text-sm"></i>
+          <div class="flex items-center justify-center w-8 h-8 mb-4 text-center bg-white dark:bg-slate-700 bg-center rounded-lg icon shadow-soft-2xl text-slate-700 dark:text-white">
+            <i class="fa-solid fa-shield-halved text-slate-700 dark:text-white text-sm"></i>
           </div>
           <div class="transition-all duration-200 ease-nav-brand">
             <h6 class="mb-0 text-white font-bold text-sm">PACS Engine v2.0</h6>
             <p class="mt-0 mb-3 text-xs font-semibold leading-tight text-slate-100">HIPAA &amp; IRB Compliant</p>
-            <span class="inline-block px-3 py-1 text-xs font-bold text-center text-slate-800 bg-white rounded-lg shadow-soft-md">
+            <span class="inline-block px-3 py-1 text-xs font-bold text-center text-slate-800 dark:text-white bg-white dark:bg-slate-700 rounded-lg shadow-soft-md dark:shadow-none">
               Active Mode
             </span>
           </div>
@@ -172,9 +187,9 @@
         <nav>
           <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
             <li class="text-sm leading-normal">
-              <a class="opacity-50 text-slate-700" href="{{ url_for('dashboard') }}">Pages</a>
+              <a class="opacity-50 text-slate-700 dark:text-slate-400" href="{{ url_for('dashboard') }}">Pages</a>
             </li>
-            <li class="text-sm pl-2 capitalize leading-normal text-slate-700 before:float-left before:pr-2 before:text-gray-600 before:content-['/']" aria-current="page">
+            <li class="text-sm pl-2 capitalize leading-normal text-slate-700 dark:text-slate-200 before:float-left before:pr-2 before:text-gray-600 dark:before:text-gray-400 before:content-['/']" aria-current="page">
               {% if request.endpoint == 'dashboard' %}Dashboard
               {% elif request.endpoint in ['trials_view', 'trial_dashboard'] %}Curate Trials
               {% elif request.endpoint == 'admin_users' %}User Access
@@ -183,7 +198,7 @@
               {% else %}Registry{% endif %}
             </li>
           </ol>
-          <h6 class="mb-0 font-bold capitalize text-slate-700">
+          <h6 class="mb-0 font-bold capitalize text-slate-700 dark:text-white">
             {% block page_header %}
               {% if request.endpoint == 'dashboard' %}Patient Registry
               {% elif request.endpoint in ['trials_view', 'trial_dashboard'] %}Research Trials
@@ -198,53 +213,61 @@
         <div class="flex items-center mt-2 grow sm:mt-0 sm:mr-6 md:mr-0 lg:flex lg:basis-auto">
           <div class="flex items-center md:ml-auto md:pr-4">
             <div class="relative flex flex-wrap items-stretch w-full transition-all rounded-lg ease-soft">
-              <span class="text-sm ease-soft leading-5.6 absolute z-50 -ml-px flex h-full items-center whitespace-nowrap rounded-lg rounded-tr-none rounded-br-none border border-r-0 border-transparent bg-transparent py-2 px-2.5 text-center font-normal text-slate-500 transition-all">
+              <span class="text-sm ease-soft leading-5.6 absolute z-50 -ml-px flex h-full items-center whitespace-nowrap rounded-lg rounded-tr-none rounded-br-none border border-r-0 border-transparent bg-transparent py-2 px-2.5 text-center font-normal text-slate-500 dark:text-slate-400 transition-all">
                 <i class="fas fa-search"></i>
               </span>
-              <input type="text" id="globalRegistrySearch" class="pl-8.75 text-sm focus:shadow-soft-primary-outline ease-soft w-1/100 leading-5.6 relative -ml-px block min-w-0 flex-auto rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 pr-3 text-gray-700 transition-all placeholder:text-gray-500 focus:border-fuchsia-300 focus:outline-none focus:transition-shadow" placeholder="Search registry..." />
+              <input type="text" id="globalRegistrySearch" class="pl-8.75 text-sm focus:shadow-soft-primary-outline ease-soft w-1/100 leading-5.6 relative -ml-px block min-w-0 flex-auto rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 bg-clip-padding py-2 pr-3 text-gray-700 dark:text-white transition-all placeholder:text-gray-500 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:transition-shadow" placeholder="Search registry..." />
             </div>
           </div>
 
           <ul class="flex flex-row justify-end pl-0 mb-0 list-none md-max:w-full items-center">
+            <!-- Sitewide Theme Toggle Button -->
+            <li class="flex items-center mr-2">
+              <button type="button" onclick="toggleDarkMode()" id="themeToggleBtn" class="w-8 h-8 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shadow-soft-xs dark:shadow-none cursor-pointer" title="Toggle Dark/Light Mode" aria-label="Toggle Dark/Light Mode">
+                <i class="fa-solid fa-moon text-xs dark:hidden text-slate-600"></i>
+                <i class="fa-solid fa-sun text-xs hidden dark:inline-block text-amber-400"></i>
+              </button>
+            </li>
+
             <li class="relative flex items-center pr-2" id="userMenuContainer">
-              <a href="javascript:;" onclick="toggleUserDropdown()" class="block px-0 py-2 text-sm font-semibold transition-all ease-nav-brand text-slate-700 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" dropdown-trigger aria-expanded="false">
+              <a href="javascript:;" onclick="toggleUserDropdown()" class="block px-0 py-2 text-sm font-semibold transition-all ease-nav-brand text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white cursor-pointer flex items-center gap-1.5" dropdown-trigger aria-expanded="false">
                 <div class="w-7 h-7 rounded-circle bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
                   <i class="fa-solid {% if current_user.role == 'Admin' %}fa-crown{% elif current_user.role == 'Editor' %}fa-user-pen{% else %}fa-user-doctor{% endif %} text-[11px]"></i>
                 </div>
-                <span class="hidden sm:inline text-xs font-mono font-bold">{{ current_user.display_email }}</span>
-                <span class="hidden sm:inline px-1.5 py-0.5 rounded text-[10px] font-mono font-bold {% if current_user.role == 'Admin' %}bg-purple-100 text-purple-700{% elif current_user.role == 'Editor' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+                <span class="hidden sm:inline text-xs font-mono font-bold text-slate-700 dark:text-white">{{ current_user.display_email }}</span>
+                <span class="hidden sm:inline px-1.5 py-0.5 rounded text-[10px] font-mono font-bold {% if current_user.role == 'Admin' %}bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300{% elif current_user.role == 'Editor' %}bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300{% else %}bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300{% endif %}">
                   {{ current_user.role }}
                 </span>
-                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 dark:text-slate-400"></i>
               </a>
 
-              <ul id="userDropdownMenu" dropdown-menu class="text-sm transform-dropdown before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-48 before:sm:right-7.5 before:text-5.5 pointer-events-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding px-2 py-3 text-left text-slate-500 opacity-0 transition-all before:absolute before:right-2 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-0 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer">
-                <li class="px-3 py-1.5 border-b border-gray-100 mb-1">
-                  <p class="text-[10px] uppercase font-mono text-slate-400 font-bold mb-0">Signed in as</p>
-                  <p class="text-xs font-bold text-slate-700 truncate font-mono mb-0">{{ current_user.display_email }}</p>
+              <ul id="userDropdownMenu" dropdown-menu class="text-sm transform-dropdown before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-48 before:sm:right-7.5 before:text-5.5 pointer-events-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white dark:bg-slate-800 dark:border dark:border-slate-700 dark:shadow-none bg-clip-padding px-2 py-3 text-left text-slate-500 dark:text-slate-300 opacity-0 transition-all before:absolute before:right-2 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white dark:before:text-slate-800 before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-0 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer">
+                <li class="px-3 py-1.5 border-b border-gray-100 dark:border-slate-700 mb-1">
+                  <p class="text-[10px] uppercase font-mono text-slate-400 dark:text-slate-400 font-bold mb-0">Signed in as</p>
+                  <p class="text-xs font-bold text-slate-700 dark:text-white truncate font-mono mb-0">{{ current_user.display_email }}</p>
                 </li>
                 <li>
-                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('change_password') }}">
-                    <i class="fa-solid fa-key text-slate-500 w-4"></i>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white text-xs flex items-center gap-2 text-slate-600 dark:text-slate-300" href="{{ url_for('change_password') }}">
+                    <i class="fa-solid fa-key text-slate-500 dark:text-slate-400 w-4"></i>
                     <span>Change Password</span>
                   </a>
                 </li>
                 {% if current_user.is_admin %}
                 <li>
-                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('admin_users') }}">
-                    <i class="fa-solid fa-users-gear text-slate-500 w-4"></i>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white text-xs flex items-center gap-2 text-slate-600 dark:text-slate-300" href="{{ url_for('admin_users') }}">
+                    <i class="fa-solid fa-users-gear text-slate-500 dark:text-slate-400 w-4"></i>
                     <span>User Access</span>
                   </a>
                 </li>
                 <li>
-                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('drive_sync') }}">
-                    <i class="fa-brands fa-google-drive text-slate-500 w-4"></i>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-white text-xs flex items-center gap-2 text-slate-600 dark:text-slate-300" href="{{ url_for('drive_sync') }}">
+                    <i class="fa-brands fa-google-drive text-slate-500 dark:text-slate-400 w-4"></i>
                     <span>Drive Sync</span>
                   </a>
                 </li>
                 {% endif %}
-                <li class="border-t border-gray-100 mt-1 pt-1">
-                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-rose-50 text-rose-500 text-xs font-semibold flex items-center gap-2" href="{{ url_for('logout') }}">
+                <li class="border-t border-gray-100 dark:border-slate-700 mt-1 pt-1">
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-500 dark:text-rose-400 text-xs font-semibold flex items-center gap-2" href="{{ url_for('logout') }}">
                     <i class="fa-solid fa-right-from-bracket w-4"></i>
                     <span>Log Out</span>
                   </a>
@@ -254,11 +277,11 @@
 
             <!-- Mobile Sidenav Burger -->
             <li class="flex items-center pl-4 xl:hidden">
-              <a href="javascript:;" class="block p-0 text-sm transition-all ease-nav-brand text-slate-500" sidenav-trigger>
+              <a href="javascript:;" class="block p-0 text-sm transition-all ease-nav-brand text-slate-500 dark:text-slate-400" sidenav-trigger>
                 <div class="w-4.5 overflow-hidden">
-                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
-                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
-                  <i class="ease-soft relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
+                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 dark:bg-slate-400 transition-all"></i>
+                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 dark:bg-slate-400 transition-all"></i>
+                  <i class="ease-soft relative block h-0.5 rounded-sm bg-slate-500 dark:bg-slate-400 transition-all"></i>
                 </div>
               </a>
             </li>
@@ -269,10 +292,16 @@
     <!-- end Navbar -->
     {% else %}
     <!-- Minimal Clean Header for Auth Pages -->
-    <div class="w-full max-w-xl mx-auto pt-8 px-6 text-center">
-      <a class="inline-flex items-center gap-2 text-slate-700" href="{{ url_for('login') }}">
+    <div class="w-full max-w-xl mx-auto pt-8 px-6 text-center relative">
+      <div class="absolute right-6 top-8">
+        <button type="button" onclick="toggleDarkMode()" class="w-8 h-8 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shadow-soft-xs dark:shadow-none cursor-pointer" title="Toggle Dark/Light Mode">
+          <i class="fa-solid fa-moon text-xs dark:hidden text-slate-600"></i>
+          <i class="fa-solid fa-sun text-xs hidden dark:inline-block text-amber-400"></i>
+        </button>
+      </div>
+      <a class="inline-flex items-center gap-2 text-slate-700 dark:text-white" href="{{ url_for('login') }}">
         <img src="{{ url_for('static', filename='img/logo-ct.png') }}" class="h-8 w-auto inline" alt="logo" />
-        <span class="font-bold tracking-wider text-base text-slate-800">ORTHOREG</span>
+        <span class="font-bold tracking-wider text-base text-slate-800 dark:text-white">ORTHOREG</span>
       </a>
     </div>
     {% endif %}

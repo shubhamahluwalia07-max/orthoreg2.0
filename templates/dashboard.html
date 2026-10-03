@@ -10,24 +10,24 @@
     
     <!-- Total Patients -->
     <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-      <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border">
+      <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border">
         <div class="flex-auto p-4">
           <div class="flex flex-row -mx-3 items-center">
             <div class="flex-none w-2/3 max-w-full px-3">
               <div>
-                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400">Total Patients</p>
-                <h5 id="statTotalPatients" class="mb-0 font-bold text-slate-700 text-xl font-mono mt-1">
+                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400 dark:text-slate-400">Total Patients</p>
+                <h5 id="statTotalPatients" class="mb-0 font-bold text-slate-700 dark:text-white text-xl font-mono mt-1">
                   {{ total_patients }}
                 </h5>
               </div>
             </div>
             <div class="px-3 text-right basis-1/3">
-              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-purple-700 to-pink-500 shadow-soft-2xl flex items-center justify-center text-white text-lg">
+              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-purple-700 to-pink-500 shadow-soft-2xl dark:shadow-none flex items-center justify-center text-white text-lg">
                 <i class="fa-solid fa-users"></i>
               </div>
             </div>
           </div>
-          <div class="mt-3 flex items-center text-xs text-slate-500">
+          <div class="mt-3 flex items-center text-xs text-slate-500 dark:text-slate-400">
             <span class="text-emerald-500 font-semibold mr-1.5"><i class="fa-solid fa-circle-check"></i></span> Unique CR Numbers
           </div>
         </div>
@@ -36,24 +36,24 @@
 
     <!-- Total Scans -->
     <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-      <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border">
+      <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border">
         <div class="flex-auto p-4">
           <div class="flex flex-row -mx-3 items-center">
             <div class="flex-none w-2/3 max-w-full px-3">
               <div>
-                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400">Total Scans</p>
-                <h5 id="statTotalScans" class="mb-0 font-bold text-slate-700 text-xl font-mono mt-1">
+                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400 dark:text-slate-400">Total Scans</p>
+                <h5 id="statTotalScans" class="mb-0 font-bold text-slate-700 dark:text-white text-xl font-mono mt-1">
                   {{ total_scans }}
                 </h5>
               </div>
             </div>
             <div class="px-3 text-right basis-1/3">
-              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-blue-600 to-cyan-400 shadow-soft-2xl flex items-center justify-center text-white text-lg">
+              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-blue-600 to-cyan-400 shadow-soft-2xl dark:shadow-none flex items-center justify-center text-white text-lg">
                 <i class="fa-solid fa-x-ray"></i>
               </div>
             </div>
           </div>
-          <div class="mt-3 flex items-center text-xs text-slate-500">
+          <div class="mt-3 flex items-center text-xs text-slate-500 dark:text-slate-400">
             <span class="text-blue-500 font-semibold mr-1.5"><i class="fa-solid fa-layer-group"></i></span> Ingested DICOM Series
           </div>
         </div>
@@ -62,24 +62,24 @@
 
     <!-- Active Research Trials -->
     <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-      <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border">
+      <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border">
         <div class="flex-auto p-4">
           <div class="flex flex-row -mx-3 items-center">
             <div class="flex-none w-2/3 max-w-full px-3">
               <div>
-                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400">Active Trials</p>
-                <h5 class="mb-0 font-bold text-slate-700 text-xl font-mono mt-1">
+                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400 dark:text-slate-400">Active Trials</p>
+                <h5 class="mb-0 font-bold text-slate-700 dark:text-white text-xl font-mono mt-1">
                   {{ total_trials }}
                 </h5>
               </div>
             </div>
             <div class="px-3 text-right basis-1/3">
-              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-emerald-600 to-teal-400 shadow-soft-2xl flex items-center justify-center text-white text-lg">
+              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-emerald-600 to-teal-400 shadow-soft-2xl dark:shadow-none flex items-center justify-center text-white text-lg">
                 <i class="fa-solid fa-vial-circle-check"></i>
               </div>
             </div>
           </div>
-          <div class="mt-3 flex items-center text-xs text-slate-500">
+          <div class="mt-3 flex items-center text-xs text-slate-500 dark:text-slate-400">
             <span class="text-emerald-500 font-semibold mr-1.5"><i class="fa-solid fa-clipboard-check"></i></span> Curated Research Cohorts
           </div>
         </div>
@@ -88,13 +88,13 @@
 
     <!-- Drive Sync Status -->
     <div class="w-full max-w-full px-3 mb-6 sm:w-1/2 sm:flex-none xl:mb-0 xl:w-1/4">
-      <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border">
+      <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border">
         <div class="flex-auto p-4">
           <div class="flex flex-row -mx-3 items-center">
             <div class="flex-none w-2/3 max-w-full px-3">
               <div>
-                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400">Cloud Storage</p>
-                <h5 class="mb-0 font-bold text-slate-700 text-sm mt-1 flex items-center gap-1.5">
+                <p class="mb-0 font-sans font-semibold leading-normal text-xs uppercase text-slate-400 dark:text-slate-400">Cloud Storage</p>
+                <h5 class="mb-0 font-bold text-slate-700 dark:text-white text-sm mt-1 flex items-center gap-1.5">
                   {% if is_drive_configured %}
                     <span class="w-2.5 h-2.5 rounded-circle bg-emerald-500 animate-pulse"></span> Google Drive Ready
                   {% else %}
@@ -104,14 +104,14 @@
               </div>
             </div>
             <div class="px-3 text-right basis-1/3">
-              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-orange-500 to-yellow-400 shadow-soft-2xl flex items-center justify-center text-white text-lg">
+              <div class="inline-block w-12 h-12 text-center rounded-xl bg-gradient-to-tl from-orange-500 to-yellow-400 shadow-soft-2xl dark:shadow-none flex items-center justify-center text-white text-lg">
                 <i class="fa-brands fa-google-drive"></i>
               </div>
             </div>
           </div>
-          <div class="mt-3 flex items-center text-xs text-slate-500">
+          <div class="mt-3 flex items-center text-xs text-slate-500 dark:text-slate-400">
             {% if current_user.is_admin_or_pi %}
-              <a href="{{ url_for('drive_sync') }}" class="text-cyan-600 font-semibold hover:underline flex items-center">
+              <a href="{{ url_for('drive_sync') }}" class="text-cyan-600 dark:text-cyan-400 font-semibold hover:underline flex items-center">
                 Configure Sync <i class="fa-solid fa-arrow-right ml-1 text-xs"></i>
               </a>
             {% else %}
@@ -125,42 +125,42 @@
   </div>
 
   <!-- Live Crawler Telemetry Banner -->
-  <div id="crawlerLiveBanner" class="hidden relative flex flex-wrap items-center justify-between gap-3 p-4 mb-6 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border border border-cyan-200 text-xs">
+  <div id="crawlerLiveBanner" class="hidden relative flex flex-wrap items-center justify-between gap-3 p-4 mb-6 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border border border-cyan-200 dark:border-cyan-800 text-xs">
     <div class="flex items-center space-x-3">
       <div class="w-3 h-3 rounded-circle bg-cyan-500 animate-ping"></div>
       <div>
-        <span class="font-bold text-slate-700 uppercase tracking-wider font-mono">Background Metadata Crawler:</span>
-        <span id="crawlerDetails" class="text-cyan-600 ml-2 font-mono">Indexing Local Radiology Repository...</span>
+        <span class="font-bold text-slate-700 dark:text-white uppercase tracking-wider font-mono">Background Metadata Crawler:</span>
+        <span id="crawlerDetails" class="text-cyan-600 dark:text-cyan-400 ml-2 font-mono">Indexing Local Radiology Repository...</span>
       </div>
     </div>
     <div class="flex items-center space-x-4 font-mono text-xs">
-      <span class="text-slate-600">Files Scanned: <strong id="crawlerProgress" class="text-slate-800">0</strong></span>
-      <span class="text-cyan-600">Folders: <strong id="crawlerFolders">0</strong></span>
-      <span class="text-emerald-600">Ingested: <strong id="crawlerIngested">0</strong></span>
-      <span class="text-slate-500">Skipped: <strong id="crawlerSkipped">0</strong></span>
-      <span id="crawlerLiveBadge" class="px-2 py-0.5 rounded bg-cyan-100 text-cyan-700 border border-cyan-300 flex items-center gap-1 font-semibold">
+      <span class="text-slate-600 dark:text-slate-300">Files Scanned: <strong id="crawlerProgress" class="text-slate-800 dark:text-white">0</strong></span>
+      <span class="text-cyan-600 dark:text-cyan-400">Folders: <strong id="crawlerFolders">0</strong></span>
+      <span class="text-emerald-600 dark:text-emerald-400">Ingested: <strong id="crawlerIngested">0</strong></span>
+      <span class="text-slate-500 dark:text-slate-400">Skipped: <strong id="crawlerSkipped">0</strong></span>
+      <span id="crawlerLiveBadge" class="px-2 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-700 flex items-center gap-1 font-semibold">
         <i class="fa-solid fa-spinner fa-spin text-[10px]"></i> Live Syncing
       </span>
     </div>
   </div>
 
   <!-- Search, Filters & Action Toolbar -->
-  <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border p-4">
+  <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border p-4">
     <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
       
       <!-- Search Form -->
       <form method="GET" action="{{ url_for('dashboard') }}" class="w-full lg:w-auto flex-1 flex flex-wrap items-center gap-3">
         <div class="relative flex-1 min-w-[220px]">
-          <span class="text-sm ease-soft leading-5.6 absolute z-50 -ml-px flex h-full items-center whitespace-nowrap rounded-lg rounded-tr-none rounded-br-none border border-r-0 border-transparent bg-transparent py-2 px-2.5 text-center font-normal text-slate-500">
+          <span class="text-sm ease-soft leading-5.6 absolute z-50 -ml-px flex h-full items-center whitespace-nowrap rounded-lg rounded-tr-none rounded-br-none border border-r-0 border-transparent bg-transparent py-2 px-2.5 text-center font-normal text-slate-500 dark:text-slate-400">
             <i class="fa-solid fa-magnifying-glass text-xs"></i>
           </span>
           <input type="text" name="search" id="filterSearch" value="{{ selected_search }}"
             placeholder="Search Patient Name or CR#..."
-            class="pl-8.75 text-sm focus:shadow-soft-primary-outline ease-soft w-full leading-5.6 relative -ml-px block min-w-0 flex-auto rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 pr-3 text-gray-700 transition-all placeholder:text-gray-400 focus:border-fuchsia-300 focus:outline-none focus:transition-shadow">
+            class="pl-8.75 text-sm focus:shadow-soft-primary-outline ease-soft w-full leading-5.6 relative -ml-px block min-w-0 flex-auto rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 bg-clip-padding py-2 pr-3 text-gray-700 dark:text-white transition-all placeholder:text-gray-400 dark:placeholder:text-slate-400 focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:transition-shadow">
         </div>
 
         <!-- Modality Filter -->
-        <select name="modality" id="filterModality" class="text-sm rounded-lg border border-solid border-gray-300 bg-white py-2 px-3 text-gray-700 focus:border-fuchsia-300 focus:outline-none">
+        <select name="modality" id="filterModality" class="text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 px-3 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none">
           <option value="">All Modalities</option>
           {% for mod in modalities %}
             <option value="{{ mod }}" {% if selected_modality == mod %}selected{% endif %}>{{ mod }}</option>
@@ -168,7 +168,7 @@
         </select>
 
         <!-- Trial Filter -->
-        <select name="trial" id="filterTrial" class="text-sm rounded-lg border border-solid border-gray-300 bg-white py-2 px-3 text-gray-700 focus:border-fuchsia-300 focus:outline-none">
+        <select name="trial" id="filterTrial" class="text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 px-3 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none">
           <option value="">All Trials</option>
           {% for t in all_trials %}
             <option value="{{ t.id }}" {% if selected_trial == t.id|string or selected_trial == t.trial_name %}selected{% endif %}>{{ t.trial_name }}</option>
@@ -176,7 +176,7 @@
         </select>
 
         <!-- Gender Filter -->
-        <select name="gender" id="filterGender" class="text-sm rounded-lg border border-solid border-gray-300 bg-white py-2 px-3 text-gray-700 focus:border-fuchsia-300 focus:outline-none">
+        <select name="gender" id="filterGender" class="text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-2 px-3 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none">
           <option value="">All Genders</option>
           <option value="M" {% if selected_gender|upper in ['M', 'MALE'] %}selected{% endif %}>Male</option>
           <option value="F" {% if selected_gender|upper in ['F', 'FEMALE'] %}selected{% endif %}>Female</option>
@@ -193,7 +193,7 @@
         </button>
 
         {% if selected_search or selected_modality or selected_trial or selected_gender or sort_by %}
-          <a href="{{ url_for('dashboard') }}" class="inline-block px-4 py-2 font-bold text-center uppercase align-middle transition-all bg-transparent border border-solid border-rose-300 text-rose-500 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft hover:bg-rose-50 flex items-center gap-1">
+          <a href="{{ url_for('dashboard') }}" class="inline-block px-4 py-2 font-bold text-center uppercase align-middle transition-all bg-transparent border border-solid border-rose-300 text-rose-500 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft hover:bg-rose-50 dark:hover:bg-rose-900/30 flex items-center gap-1">
             <i class="fa-solid fa-xmark"></i> Clear
           </a>
         {% endif %}
@@ -201,7 +201,7 @@
 
       <!-- Action Buttons for Admin/PI and Export -->
       <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
-        <a href="{{ url_for('export_all_patients') }}" class="inline-block px-4 py-2 font-bold text-center text-slate-700 uppercase align-middle transition-all bg-white border border-solid border-gray-200 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-xs hover:scale-102 flex items-center">
+        <a href="{{ url_for('export_all_patients') }}" class="inline-block px-4 py-2 font-bold text-center text-slate-700 dark:text-slate-200 uppercase align-middle transition-all bg-white dark:bg-slate-700 border border-solid border-gray-200 dark:border-slate-600 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-xs dark:shadow-none hover:scale-102 flex items-center">
           <i class="fa-solid fa-file-csv text-emerald-500 mr-1.5"></i> Export CSV
         </a>
 
@@ -220,36 +220,36 @@
   </div>
 
   <!-- Patient & Scan Data Table -->
-  <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border overflow-hidden">
-    <div class="p-6 pb-2 mb-0 bg-white border-b-0 border-b-solid rounded-t-2xl flex items-center justify-between">
-      <h6 class="font-bold text-slate-700 text-sm mb-0">Patient &amp; DICOM Registry Table</h6>
+  <div class="relative flex flex-col min-w-0 mb-6 break-words bg-white dark:bg-slate-800 border-0 border-transparent border-solid shadow-soft-xl dark:shadow-none dark:border dark:border-slate-700 rounded-2xl bg-clip-border overflow-hidden">
+    <div class="p-6 pb-2 mb-0 bg-white dark:bg-slate-800 border-b-0 border-b-solid rounded-t-2xl flex items-center justify-between">
+      <h6 class="font-bold text-slate-700 dark:text-white text-sm mb-0">Patient &amp; DICOM Registry Table</h6>
       <span class="text-xs text-slate-400 font-mono">{{ patients|length }} record{% if patients|length != 1 %}s{% endif %} shown</span>
     </div>
     <div class="flex-auto px-0 pt-0 pb-2">
       <div class="p-0 overflow-x-auto">
-        <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+        <table class="items-center w-full mb-0 align-top border-gray-200 dark:border-slate-700 text-slate-500 dark:text-slate-300">
           <thead class="align-bottom">
-            <tr class="border-b border-gray-200 bg-gray-50/50 text-slate-400 uppercase tracking-none font-bold font-mono text-xxs">
+            <tr class="border-b border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700 text-slate-400 dark:text-slate-300 uppercase tracking-none font-bold font-mono text-xxs">
               <th class="py-3 px-6 text-left">
-                <a href="{{ make_sort_url('cr_number') }}" class="group inline-flex items-center gap-1 hover:text-slate-700 transition-colors {% if sort_by == 'cr_number' %}text-purple-600 font-bold{% endif %}" title="Sort by CR Number">
+                <a href="{{ make_sort_url('cr_number') }}" class="group inline-flex items-center gap-1 hover:text-slate-700 dark:hover:text-white transition-colors {% if sort_by == 'cr_number' %}text-purple-600 dark:text-purple-400 font-bold{% endif %}" title="Sort by CR Number">
                   <span>CR NUMBER</span>
                   {% if sort_by == 'cr_number' %}
                     {% if order == 'asc' %}
-                      <i class="fa-solid fa-arrow-up text-purple-600 text-xs"></i>
+                      <i class="fa-solid fa-arrow-up text-purple-600 dark:text-purple-400 text-xs"></i>
                     {% else %}
-                      <i class="fa-solid fa-arrow-down text-purple-600 text-xs"></i>
+                      <i class="fa-solid fa-arrow-down text-purple-600 dark:text-purple-400 text-xs"></i>
                     {% endif %}
                   {% endif %}
                 </a>
               </th>
               <th class="py-3 px-6 text-left">
-                <a href="{{ make_sort_url('patient_name') }}" class="group inline-flex items-center gap-1 hover:text-slate-700 transition-colors {% if sort_by == 'patient_name' %}text-purple-600 font-bold{% endif %}" title="Sort by Patient Name">
+                <a href="{{ make_sort_url('patient_name') }}" class="group inline-flex items-center gap-1 hover:text-slate-700 dark:hover:text-white transition-colors {% if sort_by == 'patient_name' %}text-purple-600 dark:text-purple-400 font-bold{% endif %}" title="Sort by Patient Name">
                   <span>PATIENT NAME</span>
                   {% if sort_by == 'patient_name' %}
                     {% if order == 'asc' %}
-                      <i class="fa-solid fa-arrow-up text-purple-600 text-xs"></i>
+                      <i class="fa-solid fa-arrow-up text-purple-600 dark:text-purple-400 text-xs"></i>
                     {% else %}
-                      <i class="fa-solid fa-arrow-down text-purple-600 text-xs"></i>
+                      <i class="fa-solid fa-arrow-down text-purple-600 dark:text-purple-400 text-xs"></i>
                     {% endif %}
                   {% endif %}
                 </a>
@@ -262,13 +262,13 @@
               <th class="py-3 px-6 text-right">ACTIONS</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 text-slate-600 text-xs">
+          <tbody class="divide-y divide-gray-100 dark:divide-slate-700 text-slate-600 dark:text-slate-300 text-xs">
             {% for p in patients %}
-            <tr class="hover:bg-gray-50/80 transition-colors">
+            <tr class="hover:bg-gray-50/80 dark:hover:bg-slate-700/50 transition-colors">
               
               <!-- CR Number -->
-              <td class="py-3 px-6 font-mono font-bold text-slate-700 whitespace-nowrap">
-                <span class="bg-gray-100 border border-gray-200 px-2 py-1 rounded text-xs">
+              <td class="py-3 px-6 font-mono font-bold text-slate-700 dark:text-white whitespace-nowrap">
+                <span class="bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 px-2 py-1 rounded text-xs text-slate-700 dark:text-slate-200">
                   {{ p.cr_number }}
                 </span>
               </td>
@@ -277,18 +277,18 @@
               <td class="py-3 px-6 whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   {% if p.scans %}
-                    <button type="button" onclick="openRadiologyModal('{{ p.cr_number|escape }}')" class="font-bold text-slate-700 hover:text-purple-600 transition-colors flex items-center gap-1.5 text-left" title="Click to view Radiology Data">
+                    <button type="button" onclick="openRadiologyModal('{{ p.cr_number|escape }}')" class="font-bold text-slate-700 dark:text-white hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1.5 text-left" title="Click to view Radiology Data">
                       <span>{{ p.patient_name or 'Unknown Patient' }}</span>
                       <i class="fa-solid fa-layer-group text-xs text-slate-400"></i>
                     </button>
                   {% else %}
-                    <span class="font-bold text-slate-700">{{ p.patient_name or 'Unknown Patient' }}</span>
+                    <span class="font-bold text-slate-700 dark:text-white">{{ p.patient_name or 'Unknown Patient' }}</span>
                   {% endif %}
 
                   {% if current_user.role in ['Admin', 'Editor'] %}
                   <button type="button"
                           onclick="openClinicalProfileModal('{{ p.cr_number|escape }}', '{{ (p.patient_name or '')|replace('\'', '\\\'')|escape }}', '{{ (p.diagnosis or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', '{{ (p.ao_grade or p.ao_trauma_score or 'NA')|replace('\'', '\\\'')|escape }}', '{{ (p.anatomy or '')|replace('\'', '\\\'')|escape }}', '{{ (p.scanogram or 'No')|replace('\'', '\\\'')|escape }}')"
-                          class="px-2 py-0.5 rounded bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition-all inline-flex items-center gap-1 text-[11px] font-semibold"
+                          class="px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition-all inline-flex items-center gap-1 text-[11px] font-semibold"
                           title="Edit Clinical Profile">
                     <i class="fa-solid fa-user-pen text-[10px]"></i>
                     <span>Edit Profile</span>
@@ -299,8 +299,8 @@
 
               <!-- Age & Gender -->
               <td class="py-3 px-4 whitespace-nowrap">
-                <span class="text-slate-600 font-medium">{{ p.age or 'Unknown' }}</span> • 
-                <span class="font-semibold {% if p.gender == 'M' %}text-blue-600{% elif p.gender == 'F' %}text-pink-600{% else %}text-slate-500{% endif %}">
+                <span class="text-slate-600 dark:text-slate-300 font-medium">{{ p.age or 'Unknown' }}</span> • 
+                <span class="font-semibold {% if p.gender == 'M' %}text-blue-600 dark:text-blue-400{% elif p.gender == 'F' %}text-pink-600 dark:text-pink-400{% else %}text-slate-500 dark:text-slate-400{% endif %}">
                   {{ p.gender or 'Other' }}
                 </span>
               </td>
@@ -308,22 +308,22 @@
               <!-- Core Orthopedic Profile -->
               <td class="py-3 px-4">
                 <div class="space-y-1">
-                  <div class="font-medium text-slate-800 text-xs truncate max-w-[200px]" title="{{ p.diagnosis or 'Diagnosis Not Documented' }}">
+                  <div class="font-medium text-slate-800 dark:text-white text-xs truncate max-w-[200px]" title="{{ p.diagnosis or 'Diagnosis Not Documented' }}">
                     {{ p.diagnosis or '—' }}
                   </div>
                   <div class="flex flex-wrap items-center gap-1 font-mono text-[10px]">
                     {% if p.ao_grade or p.ao_trauma_score %}
-                      <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200" title="AO Classification / Grade">
+                      <span class="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800" title="AO Classification / Grade">
                         AO: {{ p.ao_grade or p.ao_trauma_score }}
                       </span>
                     {% endif %}
                     {% if p.anatomy %}
-                      <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200" title="Anatomical Region">
+                      <span class="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" title="Anatomical Region">
                         {{ p.anatomy }}
                       </span>
                     {% endif %}
                     {% if p.scanogram and p.scanogram.lower() in ['yes', 'true', '1'] %}
-                      <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200" title="Scanogram Available">
+                      <span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Scanogram Available">
                         <i class="fa-solid fa-check text-[9px] mr-0.5"></i>Scanogram
                       </span>
                     {% endif %}
@@ -336,11 +336,11 @@
                 {% if p.scans %}
                   <button type="button"
                           onclick="openRadiologyModal('{{ p.cr_number|escape }}')"
-                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-purple-50 hover:text-purple-700 border border-gray-200 text-xs font-semibold text-slate-700 transition-all shadow-soft-xs"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-purple-50 dark:hover:bg-slate-600 hover:text-purple-700 dark:hover:text-purple-300 border border-gray-200 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all shadow-soft-xs dark:shadow-none"
                           title="View Radiology Data">
-                    <i class="fa-solid fa-x-ray text-purple-600"></i>
+                    <i class="fa-solid fa-x-ray text-purple-600 dark:text-purple-400"></i>
                     <span>View Radiology Data</span>
-                    <span class="px-1.5 py-0.2 rounded bg-purple-100 text-[10px] text-purple-700 font-mono font-bold">
+                    <span class="px-1.5 py-0.2 rounded bg-purple-100 dark:bg-purple-900/60 text-[10px] text-purple-700 dark:text-purple-300 font-mono font-bold">
                       {{ p.scans|length }}
                     </span>
                   </button>
@@ -354,7 +354,7 @@
                 <div class="flex flex-wrap gap-1">
                   {% for t in p.trials %}
                     <a href="{{ url_for('trial_dashboard', trial_id=t.id) }}"
-                       class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors">
+                       class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors">
                       {{ t.trial_name }}
                     </a>
                   {% else %}
@@ -370,22 +370,22 @@
                     {% for cd in p.custom_data %}
                       {% if cd.field_type == 'file' %}
                         <a href="{{ cd.field_value }}" target="_blank"
-                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 text-[10px]"
+                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-[10px]"
                            title="View Attachment">
                           <i class="fa-solid fa-file-pdf"></i>
                           <span>{{ cd.field_name }}</span>
                         </a>
                       {% elif cd.field_type == 'link' %}
                         <a href="{{ cd.field_value }}" target="_blank"
-                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-[10px]"
+                           class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-[10px]"
                            title="External Link">
                           <i class="fa-solid fa-arrow-up-right-from-square"></i>
                           <span>{{ cd.field_name }}</span>
                         </a>
                       {% else %}
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-slate-700 text-[10px]"
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-[10px]"
                               title="{{ cd.field_name }}: {{ cd.field_value }}">
-                          <span class="text-slate-500 font-semibold">{{ cd.field_name }}:</span>
+                          <span class="text-slate-500 dark:text-slate-400 font-semibold">{{ cd.field_name }}:</span>
                           <span>{{ cd.field_value }}</span>
                         </span>
                       {% endif %}
@@ -403,21 +403,21 @@
                   
                   <!-- Edit Metadata Button -->
                   <button onclick="openEditModal('{{ p.cr_number }}', '{{ p.patient_name|escape }}', '{{ p.age or '' }}', '{{ p.gender or '' }}', '{{ (p.diagnosis or '')|replace('\'', '\\\'')|replace('\n', ' ')|escape }}', '{{ (p.ao_trauma_score or '')|replace('\'', '\\\'')|escape }}', '{{ (p.anatomy or '')|replace('\'', '\\\'')|escape }}')"
-                    class="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-slate-600 hover:text-slate-900 border border-gray-200 transition-colors shadow-soft-xxs"
+                    class="p-2 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-gray-200 dark:border-slate-600 transition-colors shadow-soft-xxs dark:shadow-none"
                     title="Edit Patient Metadata">
                     <i class="fa-solid fa-pen-to-square text-xs"></i>
                   </button>
 
                   <!-- Assign Trials Button -->
                   <button onclick="openTrialModal('{{ p.cr_number }}', [{% for t in p.trials %}{{ t.id }},{% endfor %}])"
-                    class="p-2 rounded-lg bg-gray-50 hover:bg-purple-50 text-purple-600 border border-gray-200 transition-colors shadow-soft-xxs"
+                    class="p-2 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-purple-50 dark:hover:bg-slate-600 text-purple-600 dark:text-purple-400 border border-gray-200 dark:border-slate-600 transition-colors shadow-soft-xxs dark:shadow-none"
                     title="Assign Research Trials">
                     <i class="fa-solid fa-vial text-xs"></i>
                   </button>
 
                   <!-- Add Custom Column / File Button -->
                   <button onclick="openCustomDataModal('{{ p.cr_number }}')"
-                    class="p-2 rounded-lg bg-gray-50 hover:bg-emerald-50 text-emerald-600 border border-gray-200 transition-colors shadow-soft-xxs"
+                    class="p-2 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-slate-600 text-emerald-600 dark:text-emerald-400 border border-gray-200 dark:border-slate-600 transition-colors shadow-soft-xxs dark:shadow-none"
                     title="Add Custom Field">
                     <i class="fa-solid fa-plus text-xs"></i>
                   </button>
@@ -425,7 +425,7 @@
                   <!-- Delete Patient (Cascade) - Admin Only -->
                   {% if current_user.is_admin %}
                   <form method="POST" action="{{ url_for('delete_patient', cr_number=p.cr_number) }}" class="inline" onsubmit="return confirm('Delete patient {{ p.cr_number }} and all associated scans?');">
-                    <button type="submit" class="p-2 rounded-lg bg-gray-50 hover:bg-rose-50 text-rose-500 border border-gray-200 transition-colors shadow-soft-xxs" title="Delete Patient">
+                    <button type="submit" class="p-2 rounded-lg bg-gray-50 dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-slate-600 text-rose-500 dark:text-rose-400 border border-gray-200 dark:border-slate-600 transition-colors shadow-soft-xxs dark:shadow-none" title="Delete Patient">
                       <i class="fa-solid fa-trash-can text-xs"></i>
                     </button>
                   </form>
@@ -442,8 +442,8 @@
             <tr>
               <td colspan="8" class="py-12 text-center text-slate-400">
                 <div class="flex flex-col items-center justify-center space-y-2">
-                  <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
-                  <p class="text-sm font-semibold text-slate-600">No patient records found</p>
+                  <i class="fa-solid fa-folder-open text-3xl text-slate-300 dark:text-slate-600"></i>
+                  <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">No patient records found</p>
                   <p class="text-xs text-slate-400">Try adjusting your filters or ingest DICOM files to populate the registry.</p>
                 </div>
               </td>
@@ -466,34 +466,34 @@
 
 <!-- 1. Edit Patient Metadata Modal -->
 <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-      <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-0">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
+      <h3 class="text-base font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-user-pen"></i>
         </div>
         <span>Edit Patient Metadata</span>
       </h3>
-      <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
     <form id="editForm" method="POST" action="">
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-500 mb-1">CR Number (Read Only)</label>
-          <input type="text" id="edit_cr" readonly class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-gray-200 bg-gray-100 text-slate-500 cursor-not-allowed">
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">CR Number (Read Only)</label>
+          <input type="text" id="edit_cr" readonly class="w-full px-3 py-2 text-xs font-mono rounded-lg border border-gray-200 dark:border-slate-600 bg-gray-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 cursor-not-allowed">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Patient Name</label>
-          <input type="text" name="patient_name" id="edit_name" required class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Patient Name</label>
+          <input type="text" name="patient_name" id="edit_name" required class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Age</label>
-            <input type="text" name="age" id="edit_age" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. 45 Yrs">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Age</label>
+            <input type="text" name="age" id="edit_age" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. 45 Yrs">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-            <select name="gender" id="edit_gender" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+            <select name="gender" id="edit_gender" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
               <option value="M">Male (M)</option>
               <option value="F">Female (F)</option>
               <option value="Other">Other</option>
@@ -501,22 +501,22 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Diagnosis</label>
-          <input type="text" name="diagnosis" id="edit_diagnosis" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. Femoral Neck Fracture">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Diagnosis</label>
+          <input type="text" name="diagnosis" id="edit_diagnosis" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. Femoral Neck Fracture">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">AO Trauma Score</label>
-            <input type="text" name="ao_trauma_score" id="edit_ao_score" class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. 31-B2.1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">AO Trauma Score</label>
+            <input type="text" name="ao_trauma_score" id="edit_ao_score" class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. 31-B2.1">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Anatomy / Site</label>
-            <input type="text" name="anatomy" id="edit_anatomy" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. Proximal Femur">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Anatomy / Site</label>
+            <input type="text" name="anatomy" id="edit_anatomy" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all" placeholder="e.g. Proximal Femur">
           </div>
         </div>
       </div>
-      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100">
-        <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">Cancel</button>
+      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-slate-700">
+        <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">Cancel</button>
         <button type="submit" class="px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-gradient-to-tl from-purple-700 to-pink-500 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-md hover:scale-102 hover:shadow-soft-2xl">Save Changes</button>
       </div>
     </form>
@@ -525,18 +525,18 @@
 
 <!-- 1.5 Role-Protected Clinical Profile Edit Modal -->
 <div id="clinicalProfileModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-lg p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-lg p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-user-pen"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-700 mb-0">Edit Clinical Profile</h3>
-          <p id="clinical_patient_display" class="text-[11px] text-purple-600 font-mono mb-0">Patient Clinical Metadata</p>
+          <h3 class="text-base font-bold text-slate-700 dark:text-white mb-0">Edit Clinical Profile</h3>
+          <p id="clinical_patient_display" class="text-[11px] text-purple-600 dark:text-purple-400 font-mono mb-0">Patient Clinical Metadata</p>
         </div>
       </div>
-      <button onclick="closeModal('clinicalProfileModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('clinicalProfileModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
 
     <form id="clinicalProfileForm" method="POST" action="{{ url_for('edit_patient') }}" class="space-y-4">
@@ -544,28 +544,28 @@
 
       <!-- Patient Name: Text input -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
           Patient Name <span class="text-rose-500 font-mono text-[10px]">*</span>
         </label>
         <input type="text" name="patient_name" id="clinical_patient_name" required placeholder="e.g. John Doe"
-               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
       </div>
 
       <!-- Diagnosis: Text input -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
           Diagnosis <span class="text-rose-500 font-mono text-[10px]">*</span>
         </label>
         <input type="text" name="diagnosis" id="clinical_diagnosis" required placeholder="e.g. Femoral Neck Fracture, Subtrochanteric fracture"
-               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
       </div>
 
       <!-- AO Grade: Dropdown with detailed classifications, explicitly including NA -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
           AO Grade / Classification
         </label>
-        <select name="ao_grade" id="clinical_ao_grade" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+        <select name="ao_grade" id="clinical_ao_grade" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
           <option value="NA">NA (Not Applicable)</option>
           <optgroup label="Femur - Proximal (31)">
             <option value="31-A1">31-A1: Trochanteric simple</option>
@@ -629,10 +629,10 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- Anatomy: Dropdown for laterality (Right, Left, Bilateral, Spine, Pelvis) -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Anatomy / Laterality
           </label>
-          <select name="anatomy" id="clinical_anatomy" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <select name="anatomy" id="clinical_anatomy" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
             <option value="">Select Laterality / Site...</option>
             <option value="Right">Right</option>
             <option value="Left">Left</option>
@@ -648,19 +648,19 @@
 
         <!-- Scanogram: Dropdown to indicate scanogram availability -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Scanogram Availability
           </label>
-          <select name="scanogram" id="clinical_scanogram" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <select name="scanogram" id="clinical_scanogram" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white focus:border-fuchsia-300 dark:focus:border-blue-500 focus:outline-none focus:shadow-soft-primary-outline transition-all">
             <option value="No">No (Scanogram Not Available)</option>
             <option value="Yes">Yes (Scanogram Available)</option>
           </select>
         </div>
       </div>
 
-      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100">
+      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-slate-700">
         <button type="button" onclick="closeModal('clinicalProfileModal')"
-                class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">
+                class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">
           Cancel
         </button>
         <button type="submit"
@@ -675,33 +675,33 @@
 
 <!-- 2. Assign Trials Modal -->
 <div id="trialModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-      <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-0">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
+      <h3 class="text-base font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-vial"></i>
         </div>
         <span>Assign Research Trials</span>
       </h3>
-      <button onclick="closeModal('trialModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('trialModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
     <form id="trialForm" method="POST" action="">
-      <p class="text-xs text-slate-500 mb-3">Select one or more research trials to link with this patient cohort:</p>
+      <p class="text-xs text-slate-500 dark:text-slate-300 mb-3">Select one or more research trials to link with this patient cohort:</p>
       <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
         {% for t in all_trials %}
-        <label class="flex items-center space-x-2 p-2.5 rounded-xl bg-gray-50 border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 cursor-pointer transition-colors">
-          <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="trial-checkbox rounded border-gray-300 text-purple-600 focus:ring-0">
+        <label class="flex items-center space-x-2 p-2.5 rounded-xl bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 hover:border-purple-300 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+          <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="trial-checkbox rounded border-gray-300 dark:border-slate-500 text-purple-600 focus:ring-0">
           <div class="text-xs">
-            <span class="font-bold text-slate-700">{{ t.trial_name }}</span>
+            <span class="font-bold text-slate-700 dark:text-white">{{ t.trial_name }}</span>
             {% if t.description %}
-            <p class="text-[10px] text-slate-400 mb-0">{{ t.description[:60] }}{% if t.description|length > 60 %}...{% endif %}</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-400 mb-0">{{ t.description[:60] }}{% if t.description|length > 60 %}...{% endif %}</p>
             {% endif %}
           </div>
         </label>
         {% endfor %}
       </div>
-      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100">
-        <button type="button" onclick="closeModal('trialModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">Cancel</button>
+      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-slate-700">
+        <button type="button" onclick="closeModal('trialModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">Cancel</button>
         <button type="submit" class="px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-gradient-to-tl from-purple-700 to-pink-500 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-md hover:scale-102 hover:shadow-soft-2xl">Update Trials</button>
       </div>
     </form>
@@ -710,25 +710,25 @@
 
 <!-- 3. Add Custom Data / Column Modal -->
 <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-      <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-0">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
+      <h3 class="text-base font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-emerald-600 to-teal-400 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-database"></i>
         </div>
         <span>Add Custom Column</span>
       </h3>
-      <button onclick="closeModal('customModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('customModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
     <form id="customForm" method="POST" action="" enctype="multipart/form-data">
       <div class="space-y-3">
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Field / Column Name</label>
-          <input type="text" name="field_name" required placeholder="e.g. Kellgren-Lawrence Grade, Surgical Notes" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Field / Column Name</label>
+          <input type="text" name="field_name" required placeholder="e.g. Kellgren-Lawrence Grade, Surgical Notes" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Data Type</label>
-          <select name="field_type" id="custom_type_select" onchange="toggleCustomInput(this.value)" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Type</label>
+          <select name="field_type" id="custom_type_select" onchange="toggleCustomInput(this.value)" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
             <option value="text">Text String / Note</option>
             <option value="link">Hyperlink (URL)</option>
             <option value="file">File Upload (PDF, Image, Doc)</option>
@@ -736,22 +736,22 @@
         </div>
 
         <div id="custom_text_container">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Text Value</label>
-          <input type="text" name="field_text" placeholder="Value..." class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Text Value</label>
+          <input type="text" name="field_text" placeholder="Value..." class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
 
         <div id="custom_link_container" class="hidden">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">URL Link</label>
-          <input type="url" name="field_link" placeholder="https://..." class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">URL Link</label>
+          <input type="url" name="field_link" placeholder="https://..." class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
 
         <div id="custom_file_container" class="hidden">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Attach File</label>
-          <input type="file" name="file_upload" class="w-full px-3 py-1.5 text-xs rounded-lg border border-solid border-gray-300 bg-white text-gray-700 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-gray-100 file:text-slate-700">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Attach File</label>
+          <input type="file" name="file_upload" class="w-full px-3 py-1.5 text-xs rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-gray-100 dark:file:bg-slate-600 file:text-slate-700 dark:file:text-slate-200">
         </div>
       </div>
-      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100">
-        <button type="button" onclick="closeModal('customModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">Cancel</button>
+      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-slate-700">
+        <button type="button" onclick="closeModal('customModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">Cancel</button>
         <button type="submit" class="px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-gradient-to-tl from-emerald-600 to-teal-400 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-md hover:scale-102 hover:shadow-soft-2xl">Attach Data</button>
       </div>
     </form>
@@ -760,54 +760,54 @@
 
 <!-- 3.5 Pre-Scan Patient Manual Registration Modal -->
 <div id="registerPatientModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-lg p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-lg p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
       <div class="flex items-center space-x-2.5">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-slate-700 to-slate-900 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-user-plus text-cyan-300"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-700 mb-0">Register Patient (Pre-Scan)</h3>
-          <p class="text-[11px] text-slate-400 mb-0">Manual clinical pre-registration • Creates record with 0 associated scans</p>
+          <h3 class="text-base font-bold text-slate-700 dark:text-white mb-0">Register Patient (Pre-Scan)</h3>
+          <p class="text-[11px] text-slate-400 dark:text-slate-400 mb-0">Manual clinical pre-registration • Creates record with 0 associated scans</p>
         </div>
       </div>
-      <button onclick="closeModal('registerPatientModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('registerPatientModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
 
     <form method="POST" action="{{ url_for('register_patient') }}" class="space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- CR Number -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             CR Number <span class="text-rose-500 font-mono text-[10px]">*</span>
           </label>
           <input type="text" name="cr_number" required placeholder="e.g. CR102938 or 102938"
-                 class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
-          <p class="text-[10px] text-slate-400 mt-1 font-mono">Auto-prefixes 'CR' if omitted.</p>
+                 class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-1 font-mono">Auto-prefixes 'CR' if omitted.</p>
         </div>
 
         <!-- Patient Name -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Patient Full Name <span class="text-rose-500 font-mono text-[10px]">*</span>
           </label>
           <input type="text" name="patient_name" required placeholder="e.g. Rajesh Sharma"
-                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- Age -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Age</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Age</label>
           <input type="text" name="age" placeholder="e.g. 54 or 54 Yrs"
-                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
         </div>
 
         <!-- Gender -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Gender</label>
-          <select name="gender" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+          <select name="gender" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
             <option value="M">Male</option>
             <option value="F">Female</option>
             <option value="Other">Other / Undisclosed</option>
@@ -817,32 +817,32 @@
 
       <!-- Core Orthopedic Data Fields -->
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Clinical Diagnosis</label>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Clinical Diagnosis</label>
         <input type="text" name="diagnosis" placeholder="e.g. Femoral Neck Fracture, ACL Tear, Tibial Plateau Fracture"
-               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+               class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- AO Trauma Classification Score -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">AO Trauma Score</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">AO Trauma Score</label>
           <input type="text" name="ao_trauma_score" placeholder="e.g. 31-B2.1 or 42-A1"
-                 class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
-          <p class="text-[10px] text-slate-400 mt-1 font-mono">AO/OTA Fracture Classification</p>
+                 class="w-full px-3 py-2 text-sm font-mono rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-1 font-mono">AO/OTA Fracture Classification</p>
         </div>
 
         <!-- Target Anatomy -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Target Anatomy</label>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Target Anatomy</label>
           <input type="text" name="anatomy" placeholder="e.g. Proximal Femur, Tibia, Spine"
-                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
-          <p class="text-[10px] text-slate-400 mt-1 font-mono">Anatomical region / bone</p>
+                 class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <p class="text-[10px] text-slate-400 dark:text-slate-400 mt-1 font-mono">Anatomical region / bone</p>
         </div>
 
         <!-- Scanogram Availability -->
         <div class="sm:col-span-2">
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Scanogram</label>
-          <select name="scanogram" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 bg-white text-gray-700 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Scanogram</label>
+          <select name="scanogram" class="w-full px-3 py-2 text-sm rounded-lg border border-solid border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-white dark:focus:border-blue-500 focus:border-fuchsia-300 focus:outline-none focus:shadow-soft-primary-outline transition-all">
             <option value="No">No (Scanogram Not Available)</option>
             <option value="Yes">Yes (Scanogram Available)</option>
           </select>
@@ -852,26 +852,26 @@
       <!-- Assign Trials (Optional) -->
       {% if all_trials %}
       <div>
-        <label class="block text-xs font-semibold text-slate-700 mb-1">Assign to Research Trials (Optional)</label>
-        <div class="p-2.5 rounded-xl bg-gray-50 border border-gray-200 space-y-1.5 max-h-32 overflow-y-auto">
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Assign to Research Trials (Optional)</label>
+        <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 space-y-1.5 max-h-32 overflow-y-auto">
           {% for t in all_trials %}
-          <label class="flex items-center space-x-2 text-xs text-slate-600 hover:text-slate-900 cursor-pointer select-none">
-            <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="rounded border-gray-300 text-purple-600 focus:ring-0">
-            <span class="font-mono text-purple-700 font-semibold">{{ t.trial_name }}</span>
-            <span class="text-[10px] text-slate-400 truncate">- {{ t.description or 'Protocol' }}</span>
+          <label class="flex items-center space-x-2 text-xs text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer select-none">
+            <input type="checkbox" name="trial_ids" value="{{ t.id }}" class="rounded border-gray-300 dark:border-slate-500 text-purple-600 focus:ring-0">
+            <span class="font-mono text-purple-700 dark:text-purple-300 font-semibold">{{ t.trial_name }}</span>
+            <span class="text-[10px] text-slate-400 dark:text-slate-400 truncate">- {{ t.description or 'Protocol' }}</span>
           </label>
           {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <div class="p-3 rounded-xl bg-purple-50 border border-purple-200 text-[11px] text-purple-900">
+      <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-[11px] text-purple-900 dark:text-purple-200">
         <i class="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1"></i>
         <strong>Smart DICOM Auto-Mapping:</strong> When new DICOM scans for this CR# or matching Name &amp; Age are crawled or ingested, they will automatically attach to this pre-registered patient record.
       </div>
 
-      <div class="pt-3 flex justify-end space-x-2 border-t border-gray-100">
-        <button type="button" onclick="closeModal('registerPatientModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">
+      <div class="pt-3 flex justify-end space-x-2 border-t border-gray-100 dark:border-slate-700">
+        <button type="button" onclick="closeModal('registerPatientModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">
           Cancel
         </button>
         <button type="submit" class="px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-gradient-to-tl from-slate-700 to-slate-900 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-md hover:scale-102 hover:shadow-soft-2xl flex items-center gap-1.5">
@@ -885,24 +885,24 @@
 
 <!-- 4. Upload Local DICOM Modal -->
 <div id="uploadModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100">
-    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-      <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-0">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-md p-6 border border-gray-100 dark:border-slate-700">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-slate-700 mb-4">
+      <h3 class="text-base font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
         <div class="w-8 h-8 rounded-lg bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
           <i class="fa-solid fa-cloud-arrow-up"></i>
         </div>
         <span>Ingest DICOM File</span>
       </h3>
-      <button onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <button onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
     <form method="POST" action="{{ url_for('upload_dicom_file') }}" enctype="multipart/form-data">
-      <p class="text-xs text-slate-500 mb-3">Upload an orthopedic DICOM file (`.dcm`). Metadata will be automatically extracted with `pydicom` and populated into SQLite.</p>
-      <div class="border-2 border-dashed border-gray-300 hover:border-purple-400 bg-gray-50/50 rounded-xl p-6 text-center transition-colors">
+      <p class="text-xs text-slate-500 dark:text-slate-300 mb-3">Upload an orthopedic DICOM file (`.dcm`). Metadata will be automatically extracted with `pydicom` and populated into SQLite.</p>
+      <div class="border-2 border-dashed border-gray-300 dark:border-slate-600 hover:border-purple-400 dark:hover:border-purple-500 bg-gray-50/50 dark:bg-slate-700/50 rounded-xl p-6 text-center transition-colors">
         <i class="fa-solid fa-file-medical text-3xl text-purple-600 mb-2"></i>
-        <input type="file" name="dicom_file" required accept=".dcm,application/dicom" class="block w-full text-xs text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-slate-700 hover:file:bg-gray-200 cursor-pointer">
+        <input type="file" name="dicom_file" required accept=".dcm,application/dicom" class="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 dark:file:bg-slate-600 file:text-slate-700 dark:file:text-slate-200 hover:file:bg-gray-200 cursor-pointer">
       </div>
-      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100">
-        <button type="button" onclick="closeModal('uploadModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-colors">Cancel</button>
+      <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-gray-100 dark:border-slate-700">
+        <button type="button" onclick="closeModal('uploadModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors">Cancel</button>
         <button type="submit" class="px-4 py-2 font-bold text-center text-white uppercase align-middle transition-all bg-gradient-to-tl from-purple-700 to-pink-500 rounded-lg cursor-pointer leading-pro text-xs ease-soft-in tracking-tight-soft shadow-soft-md hover:scale-102 hover:shadow-soft-2xl">Ingest &amp; Parse</button>
       </div>
     </form>
@@ -915,32 +915,32 @@
 <!-- 5. RADIOLOGY DATA & SERIES MODAL                          -->
 <!-- ========================================================= -->
 <div id="radiologyModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-backdrop p-4" onclick="if(event.target===this) closeModal('radiologyModal')">
-  <div class="relative flex flex-col min-w-0 break-words bg-white shadow-soft-xl rounded-2xl bg-clip-border w-full max-w-2xl p-6 border border-gray-100">
+  <div class="relative flex flex-col min-w-0 break-words bg-white dark:bg-slate-800 shadow-soft-xl dark:shadow-none rounded-2xl bg-clip-border w-full max-w-2xl p-6 border border-gray-100 dark:border-slate-700">
     
     <!-- Modal Header -->
-    <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-700">
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-base shadow-soft-md">
           <i class="fa-solid fa-layer-group"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-700 flex items-center gap-2 mb-0">
+          <h3 class="text-base font-bold text-slate-700 dark:text-white flex items-center gap-2 mb-0">
             <span>Radiology Data &amp; Series</span>
-            <span id="modalPatientCr" class="px-2 py-0.5 rounded text-xs font-mono bg-purple-50 text-purple-700 border border-purple-200 font-bold"></span>
+            <span id="modalPatientCr" class="px-2 py-0.5 rounded text-xs font-mono bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold"></span>
           </h3>
-          <p id="modalPatientDetails" class="text-xs text-slate-400 mt-0.5 font-sans mb-0"></p>
+          <p id="modalPatientDetails" class="text-xs text-slate-400 dark:text-slate-300 mt-0.5 font-sans mb-0"></p>
         </div>
       </div>
-      <button onclick="closeModal('radiologyModal')" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-gray-100 transition-colors" title="Close Modal">
+      <button onclick="closeModal('radiologyModal')" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Close Modal">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
     </div>
 
     <!-- Series Content Area -->
     <div class="mt-4">
-      <div class="flex items-center justify-between mb-3 text-xs text-slate-500">
+      <div class="flex items-center justify-between mb-3 text-xs text-slate-500 dark:text-slate-400">
         <span class="font-semibold uppercase tracking-wider text-[11px] font-mono">Available Imaging Series</span>
-        <span id="modalSeriesCount" class="font-mono text-purple-600 font-bold">0 Series</span>
+        <span id="modalSeriesCount" class="font-mono text-purple-600 dark:text-purple-400 font-bold">0 Series</span>
       </div>
 
       <!-- Scrollable List of Grouped Series -->
@@ -949,20 +949,20 @@
       </div>
 
       <!-- Empty State -->
-      <div id="modalNoSeries" class="hidden py-10 text-center text-slate-400">
-        <i class="fa-solid fa-folder-open text-3xl text-slate-300 mb-2"></i>
-        <p class="text-sm font-semibold text-slate-600">No imaging series found</p>
-        <p class="text-xs text-slate-400">No DICOM files have been indexed for this patient yet.</p>
+      <div id="modalNoSeries" class="hidden py-10 text-center text-slate-400 dark:text-slate-500">
+        <i class="fa-solid fa-folder-open text-3xl text-slate-300 dark:text-slate-600 mb-2"></i>
+        <p class="text-sm font-semibold text-slate-600 dark:text-slate-300">No imaging series found</p>
+        <p class="text-xs text-slate-400 dark:text-slate-400">No DICOM files have been indexed for this patient yet.</p>
       </div>
     </div>
 
     <!-- Modal Footer -->
-    <div class="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-slate-500">
+    <div class="mt-6 pt-3 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
       <div class="flex items-center gap-1.5">
-        <i class="fa-solid fa-circle-info text-purple-600"></i>
+        <i class="fa-solid fa-circle-info text-purple-600 dark:text-purple-400"></i>
         <span>Click any series to launch the DICOM PACS workstation viewer</span>
       </div>
-      <button type="button" onclick="closeModal('radiologyModal')" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-semibold text-slate-700 transition-colors">
+      <button type="button" onclick="closeModal('radiologyModal')" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 font-semibold text-slate-700 dark:text-slate-200 transition-colors">
         Close
       </button>
     </div>
@@ -1065,18 +1065,18 @@
 
     seriesList.forEach(s => {
       const modalityColors = {
-        'CT': 'bg-cyan-50 text-cyan-700 border-cyan-200',
-        'MR': 'bg-purple-50 text-purple-700 border-purple-200',
-        'MRI': 'bg-purple-50 text-purple-700 border-purple-200',
-        'CR': 'bg-blue-50 text-blue-700 border-blue-200',
-        'DX': 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'XA': 'bg-amber-50 text-amber-700 border-amber-200'
+        'CT': 'bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800',
+        'MR': 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        'MRI': 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+        'CR': 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+        'DX': 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+        'XA': 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
       };
-      const badgeClass = modalityColors[(s.modality || '').toUpperCase()] || 'bg-gray-100 text-slate-700 border-gray-200';
+      const badgeClass = modalityColors[(s.modality || '').toUpperCase()] || 'bg-gray-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-gray-200 dark:border-slate-600';
 
       const card = document.createElement('a');
       card.href = s.url;
-      card.className = "group block p-3.5 rounded-xl bg-white hover:bg-gray-50/80 border border-gray-200 hover:border-purple-300 transition-all shadow-soft-xs hover:shadow-soft-md cursor-pointer";
+      card.className = "group block p-3.5 rounded-xl bg-white dark:bg-slate-700/60 hover:bg-gray-50/80 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-500 transition-all shadow-soft-xs dark:shadow-none hover:shadow-soft-md cursor-pointer";
       card.innerHTML = `
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center space-x-3 min-w-0">
@@ -1084,20 +1084,20 @@
               ${s.modality}
             </span>
             <div class="min-w-0">
-              <div class="font-bold text-slate-700 group-hover:text-purple-600 text-sm flex items-center gap-2 truncate">
+              <div class="font-bold text-slate-700 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 text-sm flex items-center gap-2 truncate">
                 <span>${s.modality} - ${s.date || 'Study Date'}</span>
-                <span class="text-xs font-normal text-slate-400 hidden sm:inline">• ${s.desc}</span>
+                <span class="text-xs font-normal text-slate-400 dark:text-slate-400 hidden sm:inline">• ${s.desc}</span>
               </div>
-              <div class="text-[11px] text-slate-500 font-mono mt-0.5 flex flex-wrap items-center gap-3">
+              <div class="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 flex flex-wrap items-center gap-3">
                 <span><i class="fa-solid fa-calendar-day mr-1 text-slate-400"></i>${s.date || 'N/A'}</span>
-                <span class="text-purple-600 font-semibold"><i class="fa-solid fa-layer-group mr-1 text-slate-400"></i>${s.slices} ${s.slices === 1 ? 'slice' : 'slices'}</span>
+                <span class="text-purple-600 dark:text-purple-400 font-semibold"><i class="fa-solid fa-layer-group mr-1 text-slate-400"></i>${s.slices} ${s.slices === 1 ? 'slice' : 'slices'}</span>
                 ${s.uid ? `<span class="text-slate-400 hidden md:inline truncate max-w-[200px]" title="${s.uid}"><i class="fa-solid fa-fingerprint mr-1"></i>${s.uid.slice(-10)}</span>` : ''}
               </div>
             </div>
           </div>
-          <div class="flex items-center space-x-2 text-purple-600 group-hover:text-purple-700 font-semibold text-xs shrink-0">
+          <div class="flex items-center space-x-2 text-purple-600 dark:text-purple-400 group-hover:text-purple-700 dark:group-hover:text-purple-300 font-semibold text-xs shrink-0">
             <span class="hidden sm:inline">Launch Viewer</span>
-            <div class="w-8 h-8 rounded-lg bg-gray-50 group-hover:bg-gradient-to-tl group-hover:from-purple-700 group-hover:to-pink-500 group-hover:text-white border border-gray-200 group-hover:border-transparent flex items-center justify-center transition-all shadow-soft-xs">
+            <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-slate-800 group-hover:bg-gradient-to-tl group-hover:from-purple-700 group-hover:to-pink-500 group-hover:text-white border border-gray-200 dark:border-slate-600 group-hover:border-transparent flex items-center justify-center transition-all shadow-soft-xs dark:shadow-none">
               <i class="fa-solid fa-arrow-right text-xs"></i>
             </div>
           </div>
