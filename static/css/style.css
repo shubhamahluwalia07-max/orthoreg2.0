@@ -1,24 +1,21 @@
-/* Orthopedic Radiology Registry - Clinical Dark Mode Theme */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Orthopedic Radiology Registry - Soft UI Theme Extensions */
 
 :root {
-  --bg-main: #090D16;
-  --bg-surface: #101726;
-  --bg-card: rgba(19, 28, 46, 0.75);
-  --border-card: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(6, 182, 212, 0.5);
-  --accent-cyan: #06B6D4;
-  --accent-blue: #3B82F6;
-  --accent-emerald: #10B981;
-  --text-main: #F1F5F9;
-  --text-muted: #94A3B8;
+  --bg-main: #f8f9fa;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --border-card: #e9ecef;
+  --border-focus: #cb0c9f;
+  --accent-cyan: #17c1e8;
+  --accent-purple: #cb0c9f;
+  --accent-blue: #3b82f6;
+  --accent-emerald: #82d616;
+  --text-main: #344767;
+  --text-muted: #8392ab;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  font-family: 'Open Sans', 'Inter', sans-serif;
   min-height: 100vh;
 }
 
@@ -26,12 +23,13 @@ body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Glassmorphism Classes */
+/* Soft UI Panel & Card Compatibility */
 .glass-panel {
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-card);
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #e9ecef;
+  color: #344767;
 }
 
 .glass-panel-hover {
@@ -39,38 +37,39 @@ body {
 }
 
 .glass-panel-hover:hover {
-  border-color: rgba(6, 182, 212, 0.3);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-  transform: translateY(-1px);
+  border-color: #cb0c9f;
+  box-shadow: 0 20px 27px 0 rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .glass-input {
-  background: rgba(15, 23, 42, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #F8FAFC;
+  background: #ffffff;
+  border: 1px solid #d2d6da;
+  color: #495057;
+  border-radius: 0.5rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .glass-input:focus {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+  border-color: #e293d3;
+  box-shadow: 0 0 0 2px rgba(233, 174, 222, 0.5);
   outline: none;
 }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: #cbd5e1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6);
+  background: #94a3b8;
 }
 
 /* DICOM Viewer Specific Styling */
@@ -99,13 +98,13 @@ body {
 }
 
 .viewer-tool-btn.active {
-  background-color: rgba(6, 182, 212, 0.25);
-  border-color: #06B6D4;
-  color: #38BDF8;
+  background-color: rgba(203, 12, 159, 0.15);
+  border-color: #cb0c9f;
+  color: #cb0c9f;
 }
 
-/* Modal Backdrop Animations */
+/* Modal Backdrop */
 .modal-backdrop {
-  background: rgba(4, 7, 14, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
 }

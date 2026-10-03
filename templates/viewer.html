@@ -12,21 +12,21 @@
 <div class="h-[calc(100vh-140px)] flex flex-col space-y-2.5">
 
   <!-- Top Toolbar & Clinical Header -->
-  <div class="glass-panel px-4 py-2 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+  <div class="bg-white shadow-soft-xl rounded-2xl border border-gray-100 px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
     
     <!-- Patient & Scan Summary Info -->
     <div class="flex items-center space-x-3">
-      <a href="{{ url_for('dashboard') }}" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Back to Registry">
+      <a href="{{ url_for('dashboard') }}" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-slate-700 transition-colors" title="Back to Registry">
         <i class="fa-solid fa-arrow-left"></i>
       </a>
       <div>
         <div class="flex items-center space-x-2">
-          <span class="font-bold text-white text-sm">{{ patient.patient_name }}</span>
-          <span class="font-mono bg-cyan-950/80 text-cyan-400 border border-cyan-800/80 px-2 py-0.5 rounded text-[11px]">{{ patient.cr_number }}</span>
-          <span class="px-2 py-0.5 rounded font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">{{ scan.modality }}</span>
+          <span class="font-bold text-slate-800 text-sm">{{ patient.patient_name }}</span>
+          <span class="font-mono bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded text-[11px] font-bold">{{ patient.cr_number }}</span>
+          <span class="px-2 py-0.5 rounded font-mono font-bold bg-blue-50 text-blue-700 border border-blue-200">{{ scan.modality }}</span>
         </div>
         <p class="text-[11px] text-slate-400 mt-0.5">
-          {{ scan.series_description or 'Orthopedic Evaluation' }} • {{ scan.date_of_test or 'N/A' }} • {{ patient.age or 'Unknown' }} • {{ patient.gender or 'Other' }} • <span class="text-cyan-400 font-mono">{{ scan.instance_count or 1 }} slice{{ '' if (scan.instance_count or 1) == 1 else 's' }}</span>
+          {{ scan.series_description or 'Orthopedic Evaluation' }} • {{ scan.date_of_test or 'N/A' }} • {{ patient.age or 'Unknown' }} • {{ patient.gender or 'Other' }} • <span class="text-purple-700 font-mono font-semibold">{{ scan.instance_count or 1 }} slice{{ '' if (scan.instance_count or 1) == 1 else 's' }}</span>
         </p>
       </div>
     </div>
@@ -114,24 +114,24 @@
   <div class="flex-1 flex gap-2.5 min-h-0">
     
     <!-- Left Series Drawer for Patient -->
-    <div class="w-56 glass-panel rounded-2xl p-3 flex flex-col space-y-2 overflow-y-auto hidden lg:flex shrink-0">
-      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between pb-2 border-b border-slate-800">
+    <div class="w-56 bg-white shadow-soft-xl rounded-2xl border border-gray-100 p-3 flex flex-col space-y-2 overflow-y-auto hidden lg:flex shrink-0">
+      <div class="text-[11px] font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between pb-2 border-b border-gray-100">
         <span>Patient Series</span>
-        <span class="font-mono text-cyan-400">{{ patient_scans|length }}</span>
+        <span class="font-mono text-purple-700 font-bold">{{ patient_scans|length }}</span>
       </div>
       <div class="space-y-2 overflow-y-auto pr-1">
         {% for s in patient_scans %}
         <a href="{{ url_for('dicom_viewer', scan_id=s.id) }}"
-           class="block p-2.5 rounded-xl border text-xs transition-all {% if s.id == scan.id %}bg-cyan-500/10 border-cyan-500/50 shadow-md shadow-cyan-500/10{% else %}bg-slate-900/60 border-slate-800 hover:border-slate-700{% endif %}">
+           class="block p-2.5 rounded-xl border text-xs transition-all {% if s.id == scan.id %}bg-purple-50 border-purple-300 shadow-soft-xs{% else %}bg-gray-50 border-gray-200 hover:bg-gray-100{% endif %}">
           <div class="flex items-center justify-between">
-            <span class="font-bold text-white">{{ s.modality }}</span>
-            <span class="font-mono text-[10px] text-cyan-400">{{ s.date_of_test or 'N/A' }}</span>
+            <span class="font-bold {% if s.id == scan.id %}text-purple-700{% else %}text-slate-800{% endif %}">{{ s.modality }}</span>
+            <span class="font-mono text-[10px] text-slate-400">{{ s.date_of_test or 'N/A' }}</span>
           </div>
-          <p class="text-[11px] text-slate-400 mt-1 truncate">{{ s.series_description or s.file_name }}</p>
-          <div class="mt-2 flex items-center justify-between text-[10px] text-slate-500">
-            <span>{{ s.instance_count or 1 }} slice{{ '' if (s.instance_count or 1) == 1 else 's' }}</span>
+          <p class="text-[11px] text-slate-500 mt-1 truncate">{{ s.series_description or s.file_name }}</p>
+          <div class="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+            <span>{{ s.instance_count or 1 }} slice{{ '' if (scan.instance_count or 1) == 1 else 's' }}</span>
             {% if s.id == scan.id %}
-              <span class="text-cyan-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-eye text-[9px]"></i> Active</span>
+              <span class="text-purple-700 font-bold flex items-center gap-1"><i class="fa-solid fa-eye text-[9px]"></i> Active</span>
             {% endif %}
           </div>
         </a>

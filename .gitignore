@@ -34,3 +34,4 @@ htmlcov/
 Thumbs.db
 desktop.ini
 *.log
+temp_theme/

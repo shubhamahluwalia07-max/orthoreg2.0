@@ -1,201 +1,415 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='img/apple-icon.png') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}" />
   <title>{% block title %}Orthopedic Radiology Registry{% endblock %}</title>
-  
-  <!-- Tailwind CSS via CDN -->
+
+  <!-- Open Sans Font -->
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Nucleo Icons -->
+  <link href="{{ url_for('static', filename='css/nucleo-icons.css') }}" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='css/nucleo-svg.css') }}" rel="stylesheet" />
+  <!-- Popper -->
+  <script src="https://unpkg.com/@popperjs/core@2"></script>
+
+  <!-- Tailwind CSS CDN Fallback & Runtime Compiler -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#ECFEFF',
-              500: '#06B6D4',
-              600: '#0891B2',
-              700: '#0E7490',
-            },
-            surface: {
-              main: '#090D16',
-              card: '#101726',
-              border: 'rgba(255, 255, 255, 0.08)'
-            }
+            'soft-purple': '#7928CA',
+            'soft-pink': '#FF0080',
+          },
+          boxShadow: {
+            'soft-xs': '0 20px 27px 0 rgba(0, 0, 0, 0.05)',
+            'soft-sm': '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)',
+            'soft-md': '0 4px 6px -1px rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.07)',
+            'soft-xl': '0 20px 27px 0 rgba(0, 0, 0, 0.05)',
+            'soft-2xl': '0 8px 26px -4px rgba(20, 20, 20, 0.15), 0 8px 9px -5px rgba(20, 20, 20, 0.06)',
+            'soft-3xl': '0 23px 44px -6px rgba(0, 0, 0, 0.02)',
           }
         }
       }
     }
   </script>
 
-  <!-- Font Awesome 6 Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Custom Styling -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Soft UI Dashboard Tailwind CSS -->
+  <link href="{{ url_for('static', filename='css/soft-ui-dashboard-tailwind.css') }}" rel="stylesheet" />
+  <!-- Supplemental Styles -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet" />
   {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-[#090D16] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
 
-  <!-- Top Navigation Bar -->
-  <header class="sticky top-0 z-40 bg-[#0c1220]/80 backdrop-blur-md border-b border-slate-800/80">
-    <div class="w-full px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        
-        <!-- Brand Logo & Title -->
-        <div class="flex items-center space-x-3">
-          <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3 group">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-              <i class="fa-solid fa-bone text-white text-lg"></i>
-            </div>
-            <div>
-              <span class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                ORTHOREG
-                <span class="text-[10px] uppercase font-mono tracking-widest px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Clinical</span>
-              </span>
-              <p class="text-xs text-slate-400 hidden sm:block">Orthopedic Radiology Research Registry</p>
-            </div>
-          </a>
-        </div>
+<body class="m-0 font-sans antialiased font-normal text-size-base leading-default bg-gray-50 text-slate-500 min-h-screen">
 
-        <!-- Navigation Links -->
-        {% if current_user.is_authenticated %}
-        <nav class="hidden md:flex items-center space-x-1">
-          <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'dashboard' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
-            <i class="fa-solid fa-table-cells mr-1.5"></i> Patient Registry
-          </a>
-          <a href="{{ url_for('trials_view') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
-            <i class="fa-solid fa-vial-circle-check mr-1.5"></i> Curate Trials
-          </a>
-          {% if current_user.is_admin %}
-          <a href="{{ url_for('admin_users') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'admin_users' %}bg-purple-500/10 text-purple-400 border border-purple-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
-            <i class="fa-solid fa-users-gear mr-1.5 text-purple-400"></i> User Access
-          </a>
-          <a href="{{ url_for('drive_sync') }}" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'drive_sync' %}bg-cyan-500/10 text-cyan-400 border border-cyan-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
-            <i class="fa-brands fa-google-drive mr-1.5 text-emerald-400"></i> Drive Sync
-          </a>
-          {% endif %}
-        </nav>
+  {% if current_user.is_authenticated %}
+  <!-- =========================================================
+       Soft UI Dashboard Sidenav (Sidebar for Authenticated Users)
+       ========================================================= -->
+  <aside class="max-w-62.5 ease-nav-brand z-990 fixed inset-y-0 my-4 ml-4 block w-full -translate-x-full flex-wrap items-center justify-between overflow-y-auto rounded-2xl border-0 bg-white p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0 xl:bg-transparent" id="sidenav-main">
+    <div class="h-19.5">
+      <i class="absolute top-0 right-0 hidden p-4 opacity-50 cursor-pointer fas fa-times text-slate-400 xl:hidden" sidenav-close></i>
+      <a class="block px-8 py-6 m-0 text-sm whitespace-nowrap text-slate-700" href="{{ url_for('dashboard') }}">
+        <img src="{{ url_for('static', filename='img/logo-ct.png') }}" class="inline h-full max-w-full transition-all duration-200 ease-nav-brand max-h-8" alt="main_logo" />
+        <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand">ORTHOREG</span>
+      </a>
+    </div>
 
-        <!-- User Profile Dropdown Menu -->
-        <div class="relative" id="userMenuContainer">
-          <button type="button" onclick="toggleUserDropdown()" id="userDropdownBtn"
-                  class="flex items-center space-x-2 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-full transition-all focus:outline-none cursor-pointer">
-            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold
-                        {% if current_user.role == 'Admin' %}bg-purple-500/20 text-purple-400
-                        {% elif current_user.role == 'Editor' %}bg-cyan-500/20 text-cyan-400
-                        {% else %}bg-slate-700 text-slate-300{% endif %}">
-              <i class="fa-solid {% if current_user.role == 'Admin' %}fa-crown{% elif current_user.role == 'Editor' %}fa-user-pen{% else %}fa-user-doctor{% endif %} text-[11px]"></i>
-            </div>
-            <div class="text-xs text-left">
-              <span class="font-semibold text-slate-200 font-mono text-[11px]">{{ current_user.display_email }}</span>
-              <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold
-                          {% if current_user.role == 'Admin' %}bg-purple-500/20 text-purple-400 border border-purple-500/30
-                          {% elif current_user.role == 'Editor' %}bg-cyan-500/20 text-cyan-400 border border-cyan-500/30
-                          {% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
-                {{ current_user.role }}
-              </span>
-            </div>
-            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1"></i>
-          </button>
+    <hr class="h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent" />
 
-          <!-- Dropdown Menu -->
-          <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 glass-panel rounded-2xl border border-slate-700 shadow-2xl py-2 z-50 backdrop-blur-xl bg-slate-950/95">
-            <div class="px-4 py-2 border-b border-slate-800">
-              <p class="text-[10px] uppercase font-mono text-slate-400">Signed in as</p>
-              <p class="text-xs font-bold text-white truncate font-mono mt-0.5">{{ current_user.display_email }}</p>
+    <div class="items-center block w-auto max-h-screen overflow-auto h-sidenav grow basis-full">
+      <ul class="flex flex-col pl-0 mb-0">
+        <!-- Patient Registry -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'dashboard' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('dashboard') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'dashboard' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+              <i class="fa-solid fa-table-cells text-xs"></i>
             </div>
-            <div class="py-1">
-              <a href="{{ url_for('change_password') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors">
-                <i class="fa-solid fa-key text-cyan-400 w-4 text-center"></i>
-                <span>Change Password</span>
-              </a>
-              {% if current_user.is_admin %}
-              <a href="{{ url_for('admin_users') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-slate-300 hover:text-purple-300 hover:bg-slate-800/60 transition-colors">
-                <i class="fa-solid fa-users-gear text-purple-400 w-4 text-center"></i>
-                <span>User Access</span>
-              </a>
-              {% endif %}
-            </div>
-            <div class="border-t border-slate-800 pt-1">
-              <a href="{{ url_for('logout') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-rose-400 hover:bg-rose-500/10 transition-colors">
-                <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
-                <span>Log Out</span>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div>
-          <a href="{{ url_for('login') }}" class="px-4 py-2 text-sm font-medium rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold transition-colors shadow-lg shadow-cyan-500/20">
-            Sign In
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Patient Registry</span>
           </a>
-        </div>
+        </li>
+
+        <!-- Curate Trials -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('trials_view') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint in ['trials_view', 'trial_dashboard'] %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+              <i class="fa-solid fa-vial-circle-check text-xs"></i>
+            </div>
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Curate Trials</span>
+          </a>
+        </li>
+
+        {% if current_user.is_admin %}
+        <li class="w-full mt-4">
+          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400">Administration</h6>
+        </li>
+
+        <!-- User Access -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'admin_users' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('admin_users') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'admin_users' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+              <i class="fa-solid fa-users-gear text-xs"></i>
+            </div>
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">User Access</span>
+          </a>
+        </li>
+
+        <!-- Drive Sync -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'drive_sync' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('drive_sync') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'drive_sync' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+              <i class="fa-brands fa-google-drive text-xs"></i>
+            </div>
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Drive Sync</span>
+          </a>
+        </li>
         {% endif %}
 
+        <li class="w-full mt-4">
+          <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase opacity-60 text-slate-400">Account</h6>
+        </li>
+
+        <!-- Password Settings -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg {% if request.endpoint == 'change_password' %}shadow-soft-xl bg-white font-semibold text-slate-700{% else %}text-slate-500 hover:text-slate-700 hover:bg-white/60{% endif %}" href="{{ url_for('change_password') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center stroke-0 text-center xl:p-2.5 {% if request.endpoint == 'change_password' %}bg-gradient-to-tl from-purple-700 to-pink-500 text-white{% else %}bg-white text-slate-700{% endif %}">
+              <i class="fa-solid fa-key text-xs"></i>
+            </div>
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Change Password</span>
+          </a>
+        </li>
+
+        <!-- Log Out -->
+        <li class="mt-0.5 w-full">
+          <a class="py-2.7 text-sm ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors text-rose-500 hover:bg-rose-50 rounded-lg font-semibold" href="{{ url_for('logout') }}">
+            <div class="shadow-soft-2xl mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-rose-500 bg-center stroke-0 text-center xl:p-2.5">
+              <i class="fa-solid fa-right-from-bracket text-xs"></i>
+            </div>
+            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease-soft">Log Out</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Soft UI Bottom Documentation Card -->
+    <div class="mx-4 mt-auto mb-4">
+      <div class="after:opacity-65 after:bg-gradient-to-tl after:from-slate-600 after:to-slate-300 relative flex min-w-0 flex-col items-center break-words rounded-2xl border-0 border-solid bg-white bg-clip-border shadow-none after:absolute after:top-0 after:bottom-0 after:left-0 after:z-10 after:block after:h-full after:w-full after:rounded-2xl after:content-['']" sidenav-card>
+        <div class="relative z-20 flex-auto w-full p-4 text-left text-white">
+          <div class="flex items-center justify-center w-8 h-8 mb-4 text-center bg-white bg-center rounded-lg icon shadow-soft-2xl text-slate-700">
+            <i class="fa-solid fa-shield-halved text-slate-700 text-sm"></i>
+          </div>
+          <div class="transition-all duration-200 ease-nav-brand">
+            <h6 class="mb-0 text-white font-bold text-sm">PACS Engine v2.0</h6>
+            <p class="mt-0 mb-3 text-xs font-semibold leading-tight text-slate-100">HIPAA &amp; IRB Compliant</p>
+            <span class="inline-block px-3 py-1 text-xs font-bold text-center text-slate-800 bg-white rounded-lg shadow-soft-md">
+              Active Mode
+            </span>
+          </div>
+        </div>
       </div>
     </div>
-  </header>
+  </aside>
+  {% endif %}
 
-  <!-- Flash Messages Banner -->
-  <div class="w-full px-4 sm:px-6 lg:px-8 mt-4">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="space-y-2">
-          {% for category, message in messages %}
-            <div class="flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium shadow-md transition-all
-              {% if category == 'success' %}bg-emerald-950/40 border-emerald-600/40 text-emerald-300
-              {% elif category == 'danger' %}bg-rose-950/40 border-rose-600/40 text-rose-300
-              {% elif category == 'warning' %}bg-amber-950/40 border-amber-600/40 text-amber-300
-              {% else %}bg-cyan-950/40 border-cyan-600/40 text-cyan-300{% endif %}">
-              <div class="flex items-center space-x-2">
-                <i class="{% if category == 'success' %}fa-solid fa-circle-check text-emerald-400
-                          {% elif category == 'danger' %}fa-solid fa-circle-exclamation text-rose-400
-                          {% elif category == 'warning' %}fa-solid fa-triangle-exclamation text-amber-400
-                          {% else %}fa-solid fa-circle-info text-cyan-400{% endif %}"></i>
-                <span>{{ message }}</span>
-              </div>
-              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
+  <!-- =========================================================
+       Main Content Area (Clean Responsive Shell)
+       ========================================================= -->
+  <main class="ease-soft-in-out {% if current_user.is_authenticated %}xl:ml-68.5 h-full min-h-screen{% else %}min-h-screen flex flex-col justify-between{% endif %} relative rounded-xl transition-all duration-200 flex flex-col justify-between">
+    
+    {% if current_user.is_authenticated %}
+    <!-- Top Soft UI Navbar -->
+    <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all shadow-none duration-250 ease-soft-in rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="true">
+      <div class="flex items-center justify-between w-full px-4 py-1 mx-auto flex-wrap-inherit">
+        
+        <!-- Breadcrumb & Header -->
+        <nav>
+          <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
+            <li class="text-sm leading-normal">
+              <a class="opacity-50 text-slate-700" href="{{ url_for('dashboard') }}">Pages</a>
+            </li>
+            <li class="text-sm pl-2 capitalize leading-normal text-slate-700 before:float-left before:pr-2 before:text-gray-600 before:content-['/']" aria-current="page">
+              {% if request.endpoint == 'dashboard' %}Dashboard
+              {% elif request.endpoint in ['trials_view', 'trial_dashboard'] %}Curate Trials
+              {% elif request.endpoint == 'admin_users' %}User Access
+              {% elif request.endpoint == 'drive_sync' %}Drive Sync
+              {% elif request.endpoint == 'change_password' %}Profile
+              {% else %}Registry{% endif %}
+            </li>
+          </ol>
+          <h6 class="mb-0 font-bold capitalize text-slate-700">
+            {% block page_header %}
+              {% if request.endpoint == 'dashboard' %}Patient Registry
+              {% elif request.endpoint in ['trials_view', 'trial_dashboard'] %}Research Trials
+              {% elif request.endpoint == 'admin_users' %}User Access Management
+              {% elif request.endpoint == 'drive_sync' %}Google Drive Synchronizer
+              {% elif request.endpoint == 'change_password' %}Change Password
+              {% else %}Orthopedic Registry{% endif %}
+            {% endblock %}
+          </h6>
+        </nav>
+
+        <div class="flex items-center mt-2 grow sm:mt-0 sm:mr-6 md:mr-0 lg:flex lg:basis-auto">
+          <div class="flex items-center md:ml-auto md:pr-4">
+            <div class="relative flex flex-wrap items-stretch w-full transition-all rounded-lg ease-soft">
+              <span class="text-sm ease-soft leading-5.6 absolute z-50 -ml-px flex h-full items-center whitespace-nowrap rounded-lg rounded-tr-none rounded-br-none border border-r-0 border-transparent bg-transparent py-2 px-2.5 text-center font-normal text-slate-500 transition-all">
+                <i class="fas fa-search"></i>
+              </span>
+              <input type="text" id="globalRegistrySearch" class="pl-8.75 text-sm focus:shadow-soft-primary-outline ease-soft w-1/100 leading-5.6 relative -ml-px block min-w-0 flex-auto rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 pr-3 text-gray-700 transition-all placeholder:text-gray-500 focus:border-fuchsia-300 focus:outline-none focus:transition-shadow" placeholder="Search registry..." />
             </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-  </div>
+          </div>
 
-  <!-- Main Body Content -->
-  <main class="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
-    {% block content %}{% endblock %}
+          <ul class="flex flex-row justify-end pl-0 mb-0 list-none md-max:w-full items-center">
+            <li class="relative flex items-center pr-2" id="userMenuContainer">
+              <a href="javascript:;" onclick="toggleUserDropdown()" class="block px-0 py-2 text-sm font-semibold transition-all ease-nav-brand text-slate-700 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" dropdown-trigger aria-expanded="false">
+                <div class="w-7 h-7 rounded-circle bg-gradient-to-tl from-purple-700 to-pink-500 flex items-center justify-center text-white text-xs shadow-soft-md">
+                  <i class="fa-solid {% if current_user.role == 'Admin' %}fa-crown{% elif current_user.role == 'Editor' %}fa-user-pen{% else %}fa-user-doctor{% endif %} text-[11px]"></i>
+                </div>
+                <span class="hidden sm:inline text-xs font-mono font-bold">{{ current_user.display_email }}</span>
+                <span class="hidden sm:inline px-1.5 py-0.5 rounded text-[10px] font-mono font-bold {% if current_user.role == 'Admin' %}bg-purple-100 text-purple-700{% elif current_user.role == 'Editor' %}bg-blue-100 text-blue-700{% else %}bg-gray-100 text-gray-700{% endif %}">
+                  {{ current_user.role }}
+                </span>
+                <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+              </a>
+
+              <ul id="userDropdownMenu" dropdown-menu class="text-sm transform-dropdown before:font-awesome before:leading-default before:duration-350 before:ease-soft lg:shadow-soft-3xl duration-250 min-w-48 before:sm:right-7.5 before:text-5.5 pointer-events-none absolute right-0 top-0 z-50 origin-top list-none rounded-lg border-0 border-solid border-transparent bg-white bg-clip-padding px-2 py-3 text-left text-slate-500 opacity-0 transition-all before:absolute before:right-2 before:left-auto before:top-0 before:z-50 before:inline-block before:font-normal before:text-white before:antialiased before:transition-all before:content-['\f0d8'] sm:-mr-6 lg:absolute lg:right-0 lg:left-auto lg:mt-2 lg:block lg:cursor-pointer">
+                <li class="px-3 py-1.5 border-b border-gray-100 mb-1">
+                  <p class="text-[10px] uppercase font-mono text-slate-400 font-bold mb-0">Signed in as</p>
+                  <p class="text-xs font-bold text-slate-700 truncate font-mono mb-0">{{ current_user.display_email }}</p>
+                </li>
+                <li>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('change_password') }}">
+                    <i class="fa-solid fa-key text-slate-500 w-4"></i>
+                    <span>Change Password</span>
+                  </a>
+                </li>
+                {% if current_user.is_admin %}
+                <li>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('admin_users') }}">
+                    <i class="fa-solid fa-users-gear text-slate-500 w-4"></i>
+                    <span>User Access</span>
+                  </a>
+                </li>
+                <li>
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-gray-100 hover:text-slate-700 text-xs flex items-center gap-2" href="{{ url_for('drive_sync') }}">
+                    <i class="fa-brands fa-google-drive text-slate-500 w-4"></i>
+                    <span>Drive Sync</span>
+                  </a>
+                </li>
+                {% endif %}
+                <li class="border-t border-gray-100 mt-1 pt-1">
+                  <a class="ease-soft py-1.5 clear-both block w-full whitespace-nowrap rounded-lg px-3 transition-colors duration-200 hover:bg-rose-50 text-rose-500 text-xs font-semibold flex items-center gap-2" href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket w-4"></i>
+                    <span>Log Out</span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Mobile Sidenav Burger -->
+            <li class="flex items-center pl-4 xl:hidden">
+              <a href="javascript:;" class="block p-0 text-sm transition-all ease-nav-brand text-slate-500" sidenav-trigger>
+                <div class="w-4.5 overflow-hidden">
+                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
+                  <i class="ease-soft mb-0.75 relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
+                  <i class="ease-soft relative block h-0.5 rounded-sm bg-slate-500 transition-all"></i>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- end Navbar -->
+    {% else %}
+    <!-- Minimal Clean Header for Auth Pages -->
+    <div class="w-full max-w-xl mx-auto pt-8 px-6 text-center">
+      <a class="inline-flex items-center gap-2 text-slate-700" href="{{ url_for('login') }}">
+        <img src="{{ url_for('static', filename='img/logo-ct.png') }}" class="h-8 w-auto inline" alt="logo" />
+        <span class="font-bold tracking-wider text-base text-slate-800">ORTHOREG</span>
+      </a>
+    </div>
+    {% endif %}
+
+    <!-- Flash Messages Banner -->
+    <div class="w-full {% if current_user.is_authenticated %}px-6{% else %}max-w-xl px-6{% endif %} mx-auto mt-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="space-y-2 mb-4">
+            {% for category, message in messages %}
+              <div class="flex items-center justify-between px-4 py-3 rounded-lg border text-sm font-medium shadow-soft-sm transition-all
+                {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+                {% elif category in ['danger', 'error'] %}bg-rose-50 border-rose-200 text-rose-800
+                {% elif category == 'warning' %}bg-amber-50 border-amber-200 text-amber-800
+                {% else %}bg-purple-50 border-purple-200 text-purple-800{% endif %}">
+                <div class="flex items-center space-x-2">
+                  <i class="fa-solid {% if category == 'success' %}fa-circle-check text-emerald-600
+                            {% elif category in ['danger', 'error'] %}fa-circle-exclamation text-rose-600
+                            {% elif category == 'warning' %}fa-triangle-exclamation text-amber-600
+                            {% else %}fa-circle-info text-purple-600{% endif %}"></i>
+                  <span>{{ message }}</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Main Content Slot (Defined Exactly Once) -->
+    <div class="w-full {% if current_user.is_authenticated %}px-6 py-6 mx-auto flex-1{% else %}max-w-full px-4 sm:px-6 mx-auto flex-1 flex items-center justify-center{% endif %}">
+      {% block content %}{% endblock %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <!-- Soft UI Footer -->
+    <footer class="pt-6 pb-4 px-6">
+      <div class="w-full px-2 mx-auto">
+        <div class="flex flex-wrap items-center -mx-3 lg:justify-between">
+          <div class="w-full max-w-full px-3 mt-0 mb-4 shrink-0 lg:mb-0 lg:w-1/2 lg:flex-none">
+            <div class="text-xs leading-normal text-center text-slate-400 lg:text-left flex items-center justify-center lg:justify-start gap-2">
+              <span class="inline-block w-2 h-2 rounded-circle bg-emerald-500 animate-pulse"></span>
+              <span>ORTHOREG PACS Engine v2.0 • HIPAA/IRB Compliant Mode</span>
+            </div>
+          </div>
+          <div class="w-full max-w-full px-3 mt-0 shrink-0 lg:w-1/2 lg:flex-none">
+            <ul class="flex flex-wrap justify-center pl-0 mb-0 list-none lg:justify-end text-xs text-slate-400 gap-4">
+              <li>SQLite + pydicom + Cornerstone3D</li>
+              <li>&copy; 2026 Clinical Registry</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </footer>
+    {% else %}
+    <!-- Minimal Clean Footer -->
+    <footer class="py-6 px-6 text-center text-xs text-slate-400 font-mono">
+      ORTHOREG &bull; Clinical Orthopedic &amp; Radiology Registry &bull; HIPAA &amp; IRB Compliant
+    </footer>
+    {% endif %}
+
   </main>
 
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 bg-[#090D16] py-6 text-center text-xs text-slate-500">
-    <div class="w-full px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div class="flex items-center space-x-2">
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="font-mono">ORTHOREG PACS Engine v2.0 • HIPAA/IRB Compliant Mode</span>
-      </div>
-      <div>
-        <span>SQLite + pydicom + Cornerstone.js &copy; {{ now_year or 2026 }} Clinical Registry</span>
-      </div>
-    </div>
+  <!-- Soft UI Dashboard Scripts -->
+  <script src="{{ url_for('static', filename='js/plugins/perfect-scrollbar.min.js') }}" async></script>
+  <script src="{{ url_for('static', filename='js/soft-ui-dashboard-tailwind.js') }}" async></script>
+
   <script>
     function toggleUserDropdown() {
       const menu = document.getElementById('userDropdownMenu');
-      if (menu) menu.classList.toggle('hidden');
-    }
-    document.addEventListener('click', function(e) {
-      const container = document.getElementById('userMenuContainer');
-      const menu = document.getElementById('userDropdownMenu');
-      if (container && menu && !container.contains(e.target)) {
-        menu.classList.add('hidden');
+      if (menu) {
+        menu.classList.toggle('opacity-0');
+        menu.classList.toggle('pointer-events-none');
+        menu.classList.toggle('transform-dropdown-show');
+        menu.classList.toggle('transform-dropdown');
       }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidenav = document.getElementById('sidenav-main');
+      const sidenavTriggers = document.querySelectorAll('[sidenav-trigger]');
+      const sidenavCloses = document.querySelectorAll('[sidenav-close]');
+
+      function openSidenav() {
+        if (sidenav) {
+          sidenav.classList.remove('-translate-x-full');
+          sidenav.classList.add('translate-x-0', 'shadow-soft-xl');
+        }
+      }
+
+      function closeSidenav() {
+        if (sidenav) {
+          sidenav.classList.add('-translate-x-full');
+          sidenav.classList.remove('translate-x-0', 'shadow-soft-xl');
+        }
+      }
+
+      sidenavTriggers.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (sidenav && sidenav.classList.contains('-translate-x-full')) {
+            openSidenav();
+          } else {
+            closeSidenav();
+          }
+        });
+      });
+
+      sidenavCloses.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          closeSidenav();
+        });
+      });
+
+      document.addEventListener('click', function(e) {
+        const userContainer = document.getElementById('userMenuContainer');
+        const userMenu = document.getElementById('userDropdownMenu');
+        if (userContainer && userMenu && !userContainer.contains(e.target)) {
+          userMenu.classList.add('opacity-0', 'pointer-events-none', 'transform-dropdown');
+          userMenu.classList.remove('transform-dropdown-show');
+        }
+
+        if (sidenav && window.innerWidth < 1200) {
+          let clickedTrigger = false;
+          sidenavTriggers.forEach(t => { if (t.contains(e.target)) clickedTrigger = true; });
+          if (!sidenav.contains(e.target) && !clickedTrigger) {
+            closeSidenav();
+          }
+        }
+      });
     });
   </script>
+
   {% block scripts %}{% endblock %}
 </body>
 </html>
